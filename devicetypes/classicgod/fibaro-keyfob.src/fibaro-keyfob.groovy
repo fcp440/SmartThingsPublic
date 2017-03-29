@@ -262,6 +262,7 @@ def installed() {
 
 def updated() {
 	initialize()
+    configure()
 }
 
 def initialize() {
