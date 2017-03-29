@@ -40,24 +40,24 @@ metadata {
 	tiles (scale: 2){
     	[1,2,3,7,13,8,14,9,15,19,20,21,4,5,6,10,16,11,17,12,18,22,23,24,25,26,27,28,29,30].each { n ->
 			if (n in (1..6)) { //main large tiles
-            	def String imgUrl = "http://uploads.classicgod.org/FIBARO/b0#_icon.png"
+            	def String imgUrl = "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/b0#_icon.png"
                 imgUrl = imgUrl.replaceAll("#", n as String)
                 standardTile("button$n", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
                     state "default", label: "", action:"button$n", icon: imgUrl
                 }
             } else if (n in (7..12)) { //x2 tiles
             	standardTile("button$n", "device.button", inactiveLabel: false, decoration: "flat", width: 1, height: 1) {
-					state "default", label:"", action:"button$n", icon: "http://uploads.classicgod.org/FIBARO/x2_icon.png"
+					state "default", label:"", action:"button$n", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/x2.png"
 				}
             } else if (n in (13..18)) { //x3 tiles
             	standardTile("button$n", "device.button", inactiveLabel: false, decoration: "flat", width: 1, height: 1) {
-					state "default", label:"", action:"button$n", icon: "http://uploads.classicgod.org/FIBARO/x3_icon.png"
+					state "default", label:"", action:"button$n", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/x3.png"
 				}
             } else if (n in (19..24)) { //hold tiles
             	def i = n - 18
             	standardTile("switch$i", "device.switch$i",canChangeIcon: false, width: 2, height: 1, decoration: "flat") {
-					state "on", label: "Release", action: "off$i",  backgroundColor: "#00A0DC", icon: "http://uploads.classicgod.org/FIBARO/release_icon.png"
-					state "off", label: "Hold", action: "on$i",  backgroundColor: "#ffffff", icon: "http://uploads.classicgod.org/FIBARO/hold_icon.png"
+					state "on", label: "Release", action: "off$i",  backgroundColor: "#00A0DC", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/release_icon.png"
+					state "off", label: "Hold", action: "on$i",  backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/hold_icon.png"
     			}
             } else if (n in (25..30)) { //sequence tiles
             	def i = n - 24
