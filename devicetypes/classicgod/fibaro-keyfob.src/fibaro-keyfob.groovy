@@ -289,7 +289,7 @@ def configure() {
 	def cmds = []
     
     if ( unlockSeq ) {
-    	cmds << seqConfig(seq1, parameterMap()["unlockSeq"][0] as Integer)
+    	cmds << seqConfig(unlockSeq, parameterMap()["unlockSeq"][0] as Integer)
     	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["unlockSeq"][0] as Integer)
     }
     if ( lockBtn || lockTim ) {
