@@ -56,8 +56,8 @@ metadata {
             } else if (n in (19..24)) { //hold tiles
             	def i = n - 18
             	standardTile("switch$i", "device.switch$i",canChangeIcon: false, width: 2, height: 1, decoration: "flat") {
-					state "on", label: "Release", action: "off$i",  backgroundColor: "#00A0DC", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/release_icon.png"
-					state "off", label: "Hold", action: "on$i",  backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/hold_icon.png"
+					state "on", label: "", action: "off$i",  backgroundColor: "#00A0DC", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/release_icon.png"
+					state "off", label: "", action: "on$i",  backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/hold_icon.png"
     			}
             } else if (n in (25..30)) { //sequence tiles
             	def i = n - 24
