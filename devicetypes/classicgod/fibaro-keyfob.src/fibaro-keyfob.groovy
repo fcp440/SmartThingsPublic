@@ -20,7 +20,7 @@ metadata {
 		capability "Button"
 		capability "Switch"
 		capability "Configuration"
-		
+
 		(1..30).each{ n ->
 			if (n in (1..6)) { 
 				attribute "switch$n", "string"
@@ -32,7 +32,7 @@ metadata {
 		attribute "syncStatus", "string"
 		attribute "batteryStatus", "string"
 		command "forceSync"
-				
+
 		fingerprint deviceId: "0x1801" , inClusters: "0x5E,0x59,0x80,0x56,0x7A,0x73,0x98,0x22,0x85,0x5B,0x70,0x5A,0x72,0x8E,0x86,0x84,0x75"
 	}
 
@@ -92,23 +92,23 @@ metadata {
 		main "battery"
 		details(detailList)
 	}
-	
+
 	preferences {
 		input (
-				type: "paragraph",
-				element: "paragraph",
-				title: "Lock Mode:",
-				description: "The KeyFob can be protected with a sequence of 2 to 5 button clicks. It can be locked by being inactive for time set or pressing and holding selected button"
+			type: "paragraph",
+			element: "paragraph",
+			title: "Lock Mode:",
+			description: "The KeyFob can be protected with a sequence of 2 to 5 button clicks. It can be locked by being inactive for time set or pressing and holding selected button"
 		)
 		input name: "protection", title: "Protection State", type: "enum", options: [0: "Unprotected", 1: "Protection by sequence"], required: false
 		input name: "unlockSeq", type: "number", title: "Unlocking Sequence:", required: false
 		input name: "lockTim", type: "number", title: "Time To Lock", required: false
 		input name: "lockBtn", type: "number", title: "Locking Button", required: false
 		input (
-				type: "paragraph",
-				element: "paragraph",
-				title: "Sequences:",
-				description: "User can create sequences of two to five button to expand numberof possible actions. \n\nSet button sequence using button numbers 1 to 6 (for example: 1234)"
+			type: "paragraph",
+			element: "paragraph",
+			title: "Sequences:",
+			description: "User can create sequences of two to five button to expand numberof possible actions. \n\nSet button sequence using button numbers 1 to 6 (for example: 1234)"
 		)
 		parameterMap().findAll( {it.key.contains('seq')} ).each {
 			input (
@@ -119,10 +119,10 @@ metadata {
 			)
 		}
 		input (
-				type: "paragraph",
-				element: "paragraph",
-				title: "Button Modes:",
-				description: "Select button modes.\nActivating a double click will introduce delay to a single click reaction and activating a triple click will introduce delay to a double click reaction."
+			type: "paragraph",
+			element: "paragraph",
+			title: "Button Modes:",
+			description: "Select button modes.\nActivating a double click will introduce delay to a single click reaction and activating a triple click will introduce delay to a double click reaction."
 		)
 		parameterMap().findAll( {it.key.contains('btn')} ).each {
 			input (
@@ -167,7 +167,6 @@ def initialize() {
 
 def parse(String description) {
 	def results = []
-   	
 	if (description.startsWith("Err")) {
 		results = createEvent(descriptionText:description, displayed:true)
 	} else {
@@ -196,7 +195,6 @@ def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd) {
 	def Integer cmdCount = 0
 	def results = [createEvent(descriptionText: "$device.displayName woke up", isStateChange: true)]
 	cmdsGet << zwave.batteryV1.batteryGet()
-	
 	if (device.currentValue("syncStatus") != "synced") {
 		parameterMap().each {
 			if (device.currentValue("syncStatus") == "force") { state."$it.key".state = "notSynced" }
@@ -208,16 +206,13 @@ def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd) {
 		}
 		if (device.currentValue("syncStatus") == "force")  { state.protection.state = "notSynced" }
 		if ( state.protection.value != null && state.protection.state == "notSynced") {
-				cmdsSet << zwave.protectionV2.protectionSet(localProtectionState: state.protection.value  )
-				cmdsGet << zwave.protectionV2.protectionGet()
-				cmdCount = cmdCount + 1
+			cmdsSet << zwave.protectionV2.protectionSet(localProtectionState: state.protection.value  )
+			cmdsGet << zwave.protectionV2.protectionGet()
+			cmdCount = cmdCount + 1
 		}
-		
-		
 		sendEvent(name: "syncStatus", value: "inProgress")
 		runIn((5+cmdCount*1.5), syncCheck)
 	}
-	
 	if (cmdsSet) { 
 		cmds = delayBetween(cmdsSet.collect{zwave.securityV1.securityMessageEncapsulation().encapsulate(it).format()},500)
 		cmds << "delay 500" 
@@ -225,16 +220,13 @@ def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd) {
 	cmds = cmds + delayBetween(cmdsGet.collect{zwave.securityV1.securityMessageEncapsulation().encapsulate(it).format()},1000)
 	cmds << "delay "+(5000+cmdCount*1500)
 	cmds << zwave.securityV1.securityMessageEncapsulation().encapsulate(zwave.wakeUpV1.wakeUpNoMoreInformation()).format()
-   
 	results = results + response(cmds)
-	
 	return results
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.configurationv1.ConfigurationReport cmd) {	 
+def zwaveEvent(physicalgraph.zwave.commands.configurationv1.ConfigurationReport cmd) {
 	def paramKey
 	paramKey = parameterMap().find( {it.num == cmd.parameterNumber } ).key
-	
 	if (state."$paramKey".value == cmd.scaledConfigurationValue) {
 		state."$paramKey".state = "synced"
 	}
@@ -450,11 +442,9 @@ def btnTimToValue () {
 		def Integer tempValue
 		if (lockBtn) { buttonVal = (lockBtn as Integer)*256 } else { buttonVal = 0 }
 		if (lockTim) { timeVal = lockTim } else { timeVal = 0 }
-		
 		if (timeVal > 255) { timeVal = 255 }
 		if (timeVal < 5 && timeVal != 0) { timeVal = 5 }
 		if (buttonVal > 1536) { buttonVal = 1536 }
-		
 		return buttonVal+timeVal
 }
 
