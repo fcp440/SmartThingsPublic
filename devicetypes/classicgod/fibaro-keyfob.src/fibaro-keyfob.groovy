@@ -32,12 +32,18 @@ metadata {
 		attribute "syncStatus", "string"
 		attribute "batteryStatus", "string"
 		command "forceSync"
+		command "menuButton"
 
 		fingerprint deviceId: "0x1801" , inClusters: "0x5E,0x59,0x80,0x56,0x7A,0x73,0x98,0x22,0x85,0x5B,0x70,0x5A,0x72,0x8E,0x86,0x84,0x75"
 	}
 
 	tiles (scale: 2){
 		def detailList = []
+
+		standardTile("menuButton", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2, canChangeIcon: true) {
+			state "default", label:"PUSH",  action:"menuButton", backgroundColor: "#00A0DC", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/main_icon.png"
+			state "pushed", label:"PUSH",  action:"menuButton", backgroundColor: "#FFFFFF", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/main_icon.png"
+		}
 		[1,2,3,7,13,8,14,9,15,19,20,21,4,5,6,10,16,11,17,12,18,22,23,24,25,26,27,28,29,30].each { n ->
 			if (n in (1..6)) { //main large tiles
 				def String imgUrl = "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/b0#_icon.png"
@@ -89,7 +95,7 @@ metadata {
 		detailList << "batteryStatus"
 		detailList << "syncStatus"
 		
-		main "battery"
+		main "menuButton"
 		details(detailList)
 	}
 
@@ -149,6 +155,7 @@ metadata {
 				required: false
 			)
 		}
+		input name: "menuButton", type: "number", title: "Button number to be activated from main menu:", required: false
 	}
 }
 
@@ -321,6 +328,7 @@ def updated() {
 	state.lastUpdated = now()
 }
 
+
 def on1() { buttonEvent(19,"on") }
 def on2() { buttonEvent(20,"on") }
 def on3() { buttonEvent(21,"on") }
@@ -357,6 +365,14 @@ def button27() { buttonEvent(27,"pushed") }
 def button28() { buttonEvent(28,"pushed") }
 def button29() { buttonEvent(29,"pushed") }
 def button30() { buttonEvent(30,"pushed") }
+
+def menuButton() { 
+	if (settings.menuButton == null ) {
+		buttonEvent(1,"pushed") 
+	} else {
+		buttonEvent(settings.menuButton as Integer,"pushed") 
+	}
+}
 
 def buttonEvent(button, action) {
 	button = button as Integer
