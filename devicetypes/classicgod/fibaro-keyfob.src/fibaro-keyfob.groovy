@@ -21,85 +21,157 @@ metadata {
 		capability "Switch"
         capability "Configuration"
         
-        (1..26).each{
-        	if (it in (1..6)) {
-                attribute "switch$it", "string"
-                command "on$it"
-                command "off$it"
+        (1..30).each{ n ->
+        	if (n in (1..6)) { 
+                attribute "switch$n", "string"
+                command "on$n"
+                command "off$n"
             }
-            command "button$it"
+            command "button$n"
         }
-        
+		attribute "syncStatus", "string"
+		attribute "batteryStatus", "string"
+        command "forceSync"
+                
         fingerprint deviceId: "0x1801" , inClusters: "0x5E,0x59,0x80,0x56,0x7A,0x73,0x98,0x22,0x85,0x5B,0x70,0x5A,0x72,0x8E,0x86,0x84,0x75"
 	}
 
-	simulator {
-		// TODO: define status and reply messages here
-	}
-
 	tiles (scale: 2){
+        def detailList = []
     	[1,2,3,7,13,8,14,9,15,19,20,21,4,5,6,10,16,11,17,12,18,22,23,24,25,26,27,28,29,30].each { n ->
 			if (n in (1..6)) { //main large tiles
             	def String imgUrl = "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/b0#_icon.png"
                 imgUrl = imgUrl.replaceAll("#", n as String)
+                detailList << "button$n"
                 standardTile("button$n", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
                     state "default", label: "", action:"button$n", icon: imgUrl
                 }
             } else if (n in (7..12)) { //x2 tiles
+                detailList << "button$n"
             	standardTile("button$n", "device.button", inactiveLabel: false, decoration: "flat", width: 1, height: 1) {
 					state "default", label:"", action:"button$n", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/x2.png"
 				}
             } else if (n in (13..18)) { //x3 tiles
+                detailList << "button$n"
             	standardTile("button$n", "device.button", inactiveLabel: false, decoration: "flat", width: 1, height: 1) {
 					state "default", label:"", action:"button$n", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/x3.png"
 				}
             } else if (n in (19..24)) { //hold tiles
             	def i = n - 18
+                detailList << "switch$i"
             	standardTile("switch$i", "device.switch$i",canChangeIcon: false, width: 2, height: 1, decoration: "flat") {
 					state "on", label: "", action: "off$i",  backgroundColor: "#00A0DC", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/release_icon.png"
 					state "off", label: "", action: "on$i",  backgroundColor: "#ffffff", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/hold_icon.png"
     			}
             } else if (n in (25..30)) { //sequence tiles
             	def i = n - 24
-            	standardTile("button$n", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 1) {
-					state "default", label:"Sequance $i", action:"button$n"
+                detailList << "button$n"
+            	valueTile("button$n", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 1) {
+					state "default", label:"SEQENCE $i", action:"button$n"
 				}
             }
 		}
-        valueTile("battery", "device.battery", inactiveLabel: false, decoration: "flat", width: 4, height: 2) {
-			state "default", label:'Battery: ${value}%'
+        valueTile("batteryStatus", "device.batteryStatus", inactiveLabel: false, decoration: "flat", width: 4, height: 2) {
+			state "val", label:'${currentValue}'
 		}
-        standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", label:"", action:"configure", icon:"st.secondary.configure"
+        standardTile("syncStatus", "device.syncStatus", decoration: "flat", width: 2, height: 2) {
+			state "synced", label:'OK', action:"forceSync", backgroundColor: "#44b621", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/sync_icon.png"
+			state "pending", label:"Pending", action:"forceSync", backgroundColor: "#00A0DC", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/sync_icon.png"
+			state "inProgress", label:"Syncing", action:"forceSync", backgroundColor: "#551A8B", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/sync_icon.png"
+			state "incomplete", label:"Incomplete", action:"forceSync", backgroundColor: "#C6C600", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/sync_icon.png"
+			state "failed", label:"Failed", action:"forceSync", backgroundColor: "#FF0000", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/sync_icon.png"
+			state "force", label:"Force", action:"forceSync", backgroundColor: "#FFA500", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/sync_icon.png"
 		}
+        valueTile("battery", "device.battery", inactiveLabel: false, decoration: "flat", width: 2, height: 2, canChangeIcon: true) {
+			state "val", label:'Battery: ${currentValue}%', icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/main_icon.png"
+		}
+        
+        detailList << "batteryStatus"
+        detailList << "syncStatus"
+        
+        main "battery"
+        details(detailList)
 	}
     
     preferences {
-    	input name: "unlockSeq", type: "number", title: "1. Unlocking Sequence\n\nSet unlocking sequence for the remote using button numbers 1 to 6 (for example: 1234) 2 to 5 buttons. Set to 0 to disable.\nDefault: 0", description: "Enter Sequence", required: false
-    	input name: "lockTim", type: "number", title: "2.1. Time To Lock\n\nSet time in sec. The remote will lock after this time elapses from the last activity. Set to 0 to disable.\nDefault: 60", description: "Enter number", required: false
-        input name: "lockBtn", type: "number", title: "2.2. Locking Button\n\nSet button number 1 to 6. The remote will lock if you press and hold this button. Set to 0 to disable.\nDefault: 0", description: "Enter Button nr", required: false
-    	input name: "seq1", type: "number", title: "3. 1st Sequence\n\nSet button sequence using button numbers 1 to 6 (for example: 1234) 2 to 5 buttons. Set to 0 to disable.\nDefault: 0 ", description: "Enter Sequence", required: false
-    	input name: "seq2", type: "number", title: "4. 2nd Sequence\nDefault: 0 ", description: "Enter Sequence", required: false
-    	input name: "seq3", type: "number", title: "5. 3rd Sequence\nDefault: 0 ", description: "Enter Sequence", required: false
-        input name: "seq4", type: "number", title: "6. 4th Sequence\nDefault: 0 ", description: "Enter Sequence", required: false
-        input name: "seq5", type: "number", title: "7. 5th Sequence\nDefault: 0 ", description: "Enter Sequence", required: false
-        input name: "seq6", type: "number", title: "8. 6th Sequence\nDefault: 0 ", description: "Enter Sequence", required: false
-    	input name: "seqTim", type: "number", title: "9. Sequences - timeout\n\nTime that must elapse from the last click of the button to check if the sequence is valid\nDefault: 10 (1s) ", description: "Enter number", required: false
-        input name: "btn1mode", type: "enum", title: "21. Button 1 Mode\nDefault: 1 click & hold ", options: ["1 Click", "2 Clicks", "3 Clicks", "Hold and Release", "1 & 2 Clicks", "1, 2 & 3 Clicks", "1 Click & Hold", "1, 2 Clicks & Hold", "1, 2, 3 Clicks & Hold"], description: "Select Mode", required: false
-        input name: "btn2mode", type: "enum", title: "22. Button 2 Mode\nDefault: 1 click & hold ", options: ["1 Click", "2 Clicks", "3 Clicks", "Hold and Release", "1 & 2 Clicks", "1, 2 & 3 Clicks", "1 Click & Hold", "1, 2 Clicks & Hold", "1, 2, 3 Clicks & Hold"], description: "Select Mode", required: false
-        input name: "btn3mode", type: "enum", title: "23. Button 3 Mode\nDefault: 1 click & hold ", options: ["1 Click", "2 Clicks", "3 Clicks", "Hold and Release", "1 & 2 Clicks", "1, 2 & 3 Clicks", "1 Click & Hold", "1, 2 Clicks & Hold", "1, 2, 3 Clicks & Hold"], description: "Select Mode", required: false
-        input name: "btn4mode", type: "enum", title: "24. Button 4 Mode\nDefault: 1 click & hold ", options: ["1 Click", "2 Clicks", "3 Clicks", "Hold and Release", "1 & 2 Clicks", "1, 2 & 3 Clicks", "1 Click & Hold", "1, 2 Clicks & Hold", "1, 2, 3 Clicks & Hold"], description: "Select Mode", required: false
-        input name: "btn5mode", type: "enum", title: "25. Button 5 Mode\nDefault: 1 click & hold ", options: ["1 Click", "2 Clicks", "3 Clicks", "Hold and Release", "1 & 2 Clicks", "1, 2 & 3 Clicks", "1 Click & Hold", "1, 2 Clicks & Hold", "1, 2, 3 Clicks & Hold"], description: "Select Mode", required: false
-        input name: "btn6mode", type: "enum", title: "26. Button 6 Mode\nDefault: 1 click & hold ", options: ["1 Click", "2 Clicks", "3 Clicks", "Hold and Release", "1 & 2 Clicks", "1, 2 & 3 Clicks", "1 Click & Hold", "1, 2 Clicks & Hold", "1, 2, 3 Clicks & Hold"], description: "Select Mode", required: false
+    	input (
+                type: "paragraph",
+                element: "paragraph",
+                title: "Lock Mode:",
+                description: "The KeyFob can be protected with a sequence of 2 to 5 button clicks. It can be locked by being inactive for time set or pressing and holding selected button"
+        )
+        input name: "protection", title: "Protection State", type: "enum", options: [0: "Unprotected", 1: "Protection by sequence"], required: false
+    	input name: "unlockSeq", type: "number", title: "Unlocking Sequence:", required: false
+    	input name: "lockTim", type: "number", title: "Time To Lock", required: false
+        input name: "lockBtn", type: "number", title: "Locking Button", required: false
+    	input (
+                type: "paragraph",
+                element: "paragraph",
+                title: "Sequences:",
+                description: "User can create sequences of two to five button to expand numberof possible actions. \n\nSet button sequence using button numbers 1 to 6 (for example: 1234)"
+        )
+        parameterMap().findAll( {it.key.contains('seq')} ).each {
+    		input (
+                name: it.key,
+                title: it.descr,
+                type: "number",
+                required: false
+            )
+    	}
+        input (
+                type: "paragraph",
+                element: "paragraph",
+                title: "Button Modes:",
+                description: "Select button modes.\nActivating a double click will introduce delay to a single click reaction and activating a triple click will introduce delay to a double click reaction."
+        )
+        parameterMap().findAll( {it.key.contains('btn')} ).each {
+    		input (
+                name: it.key,
+                title: it.descr,
+                type: "enum",
+                options: [
+                	1: "1 Click", 
+                    2: "2 Clicks", 
+                    3: "1 & 2 Clicks", 
+                    4: "3 Clicks", 
+                    5: "1 & 3 Clicks", 
+                    6: "2 & 3 Clicks", 
+                    7: "1, 2 & 3 Clicks", 
+                    8: "Hold and Release", 
+                    9: "1 Click & Hold (Default)", 
+                    10: "2 Clicks & Hold",
+                    11: "1, 2 Clicks & Hold",
+                    12: "3 Clicks & Hold",
+                    13: "1, 3 Clicks & Hold",
+                    14: "2, 3 Clicks & Hold",
+                    15: "1, 2, 3 Clicks & Hold"
+                ],
+                required: false
+            )
+    	}
     }
+}
+
+def installed() {
+	initialize()
+}
+
+def initialize() {
+	sendEvent(name: "numberOfButtons", value: 30)
+    state.lastUpdated = now()
+    parameterMap().each {
+    	state."$it.key" = [value: null, state: "synced"]
+    }
+    state.protection = [value: null, state: "synced"]
 }
 
 def parse(String description) {
 	def results = []
+   	
 	if (description.startsWith("Err")) {
 	    results = createEvent(descriptionText:description, displayed:true)
 	} else {
-		def cmd = zwave.parse(description, [0x5E: 2, 0x59: 1, 0x80: 1, 0x56: 1, 0x7A: 3, 0x73: 1, 0x98: 1, 0x22: 1, 0x85: 2, 0x5B: 3, 0x70: 1, 0x8E: 2, 0x86: 2, 0x84: 2, 0x75: 2])
+		def cmd = zwave.parse(description, [0x5E: 2, 0x59: 1, 0x80: 1, 0x56: 1, 0x7A: 3, 0x73: 1, 0x98: 1, 0x22: 1, 0x85: 2, 0x5B: 1, 0x70: 1, 0x8E: 2, 0x86: 2, 0x84: 2, 0x75: 2])
 		if(cmd) results += zwaveEvent(cmd)
 		if(!results) results = [ descriptionText: cmd, displayed: false ]
 	}
@@ -117,18 +189,77 @@ def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulat
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd) {
-	def results = [createEvent(descriptionText: "$device.displayName woke up", isStateChange: false)]
-	//def prevBattery = device.currentState("battery")
-	//if (!prevBattery || (new Date().time - prevBattery.date.time)/60000 >= 60 * 53) {
-		results << response(zwave.batteryV1.batteryGet().format())
-	//}
-	results << response(zwave.wakeUpV1.wakeUpNoMoreInformation().format())
-	return results
+	log.info "$device.displayName woke up"
+    def cmdsSet = []
+    def cmdsGet = []
+    def cmds = []
+    def Integer cmdCount = 0
+	def results = [createEvent(descriptionText: "$device.displayName woke up", isStateChange: true)]
+	cmdsGet << zwave.batteryV1.batteryGet()
+	
+    if (device.currentValue("syncStatus") != "synced") {
+    	parameterMap().each {
+        	if (device.currentValue("syncStatus") == "force") { state."$it.key".state = "notSynced" }
+        	if (state."$it.key".value != null && state."$it.key".state == "notSynced") {
+            	cmdsSet << zwave.configurationV1.configurationSet(configurationValue: paramValue(state."$it.key".value, it.size), parameterNumber: it.num , size: it.size)
+                cmdsGet << zwave.configurationV1.configurationGet(parameterNumber: it.num)
+                cmdCount = cmdCount + 1
+            }
+        }
+        if (device.currentValue("syncStatus") == "force")  { state.protection.state = "notSynced" }
+        if ( state.protection.value != null && state.protection.state == "notSynced") {
+            	cmdsSet << zwave.protectionV2.protectionSet(localProtectionState: state.protection.value  )
+                cmdsGet << zwave.protectionV2.protectionGet()
+                cmdCount = cmdCount + 1
+        }
+        
+        
+    	sendEvent(name: "syncStatus", value: "inProgress")
+        runIn((5+cmdCount*1.5), syncCheck)
+    }
+    
+    if (cmdsSet) { 
+    	cmds = delayBetween(cmdsSet.collect{zwave.securityV1.securityMessageEncapsulation().encapsulate(it).format()},500)
+    	cmds << "delay 500" 
+    }
+    cmds = cmds + delayBetween(cmdsGet.collect{zwave.securityV1.securityMessageEncapsulation().encapsulate(it).format()},1000)
+    cmds << "delay "+(5000+cmdCount*1500)
+    cmds << zwave.securityV1.securityMessageEncapsulation().encapsulate(zwave.wakeUpV1.wakeUpNoMoreInformation()).format()
+   
+    results = results + response(cmds)
+    
+    return results
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.configurationv1.ConfigurationReport cmd) {	 
+    def paramKey
+    paramKey = parameterMap().find( {it.num == cmd.parameterNumber } ).key
+    
+    if (state."$paramKey".value == cmd.scaledConfigurationValue) {
+    	state."$paramKey".state = "synced"
+    }
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.protectionv2.ProtectionReport cmd) {
+	if (state.protection.value == cmd.localProtectionState) {
+    	state.protection.state = "synced"
+    }
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
-    log.debug "Battery!: $map"
+	log.info "$device.displayName battery is $cmd.batteryLevel ($cmd)"
+    def timeDate = new Date().format("yyyy MMM dd EEE HH:mm:ss", location.timeZone)
+    sendEvent(name: "batteryStatus", value: "Battery: $cmd.batteryLevel%\n($timeDate)")
 	sendEvent(name: "battery", value: cmd.batteryLevel)
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.applicationstatusv1.ApplicationRejectedRequest cmd) {
+	log.warn "KeyFob rejected onfiguration!"
+    sendEvent(name: "syncStatus", value:"failed")
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.protectionv2.ProtectionSupportedReport cmd) {
+	log.debug cmd
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.centralscenev1.CentralSceneNotification cmd) {
@@ -152,7 +283,6 @@ def zwaveEvent(physicalgraph.zwave.commands.centralscenev1.CentralSceneNotificat
         }
     } else {
     	if (keyAttribute == 0) {
-        	
             if (realButton > 6) {
             	mappedButton = 18 + realButton
             } else {
@@ -163,8 +293,40 @@ def zwaveEvent(physicalgraph.zwave.commands.centralscenev1.CentralSceneNotificat
         }
     	action = "pushed"
     }
-	log.debug "mappedButton!: $mappedButton action: $action"
     buttonEvent( mappedButton, action )
+}
+
+def updated() {
+	if ( (now() - state.lastUpdated) < 500 ) return
+    def Integer tempValue 
+    def Integer syncRequired = 0
+    parameterMap().each {
+        if(settings."$it.key" != null || it.key == "lockBtnTim" ) {
+			switch (it.type) {
+				case "buttonTime": tempValue = btnTimToValue(); break
+				case "sequence": tempValue = seqToValue(settings."$it.key"); break
+                case "mode":  tempValue = settings."$it.key" as Integer; break
+                case "number": tempValue = settings."$it.key"; break
+                }
+                if (state."$it.key" == null) { state."$it.key" = [value: null, state: "synced"] }
+                if (state."$it.key".value != tempValue) {
+                    syncRequired = 1
+                    state."$it.key".value = tempValue
+                    state."$it.key".state = "notSynced"
+                }
+        }
+    }
+    if (state.protection == null) { state.protection = [value: null, state: "synced"] }
+    if(state.protection != null) {
+    	tempValue = settings.protection as Integer
+    	if (state.protection.value != tempValue) {
+        	syncRequired = 1
+            state.protection.value = tempValue
+            state.protection.state = "notSynced"
+        }
+    }
+    if ( syncRequired !=0 ) { sendEvent(name: "syncStatus", value: "pending") }
+    state.lastUpdated = now()
 }
 
 def on1() { buttonEvent(19,"on") }
@@ -179,7 +341,7 @@ def off3() { buttonEvent(21,"off") }
 def off4() { buttonEvent(22,"off") }
 def off5() { buttonEvent(23,"off") }
 def off6() { buttonEvent(24,"off") }
-def button1() { buttonEvent(1,"pushed") }
+def button1() { buttonEvent(1,"pushed")  }
 def button2() { buttonEvent(2,"pushed") }
 def button3() { buttonEvent(3,"pushed") }
 def button4() { buttonEvent(4,"pushed") }
@@ -205,15 +367,47 @@ def button29() { buttonEvent(29,"pushed") }
 def button30() { buttonEvent(30,"pushed") }
 
 def buttonEvent(button, action) {
-	button = button as Integer
+    button = button as Integer
     def switchNr = button - 18 as Integer
-	if (action == "pushed") {
+    if (action == "pushed") {
 		sendEvent(name: "button", value: "pushed", data: [buttonNumber: button], descriptionText: "$device.displayName button $button was pushed", isStateChange: true)
 	} else if (action == "on"){
     	sendEvent(name: "button", value: "pushed", data: [buttonNumber: button], descriptionText: "$device.displayName button $button was pushed", isStateChange: true)
-		sendEvent(name: "switch$switchNr", value: "on", data: [buttonNumber: button], descriptionText: "$device.displayName button $button was held", isStateChange: true)
+		sendEvent(name: "switch$switchNr", value: "on", data: [switchNumber: switchNr], descriptionText: "$device.displayName switch $switchNr was turned on", isStateChange: true)
 	} else if  (action == "off") {
-		sendEvent(name: "switch$switchNr", value: "off", data: [buttonNumber: button], descriptionText: "$device.displayName button $button was released", isStateChange: true)
+		sendEvent(name: "switch$switchNr", value: "off", data: [switchNumber: switchNr], descriptionText: "$device.displayName switch $switchNr was turned off", isStateChange: true)
+    }
+}
+
+def syncCheck() {
+    def Integer count = 0
+	if (device.currentValue("syncStatus") != "synced") {
+    	parameterMap().each {
+        	if (state."$it.key".state == "notSynced" ) {
+            	count = count + 1
+            } 
+        }
+    }
+    if (state.protection.state != "synced") { count = count + 1 }
+    if (count == 0) {
+    	sendEvent(name: "syncStatus", value: "synced")
+    } else {
+    	if (device.currentValue("syncStatus") != "failed") {
+    		sendEvent(name: "syncStatus", value: "incomplete")
+        }
+    }
+}
+
+def forceSync() {
+	if (device.currentValue("syncStatus") != "force") {
+    	state.prevSyncState = device.currentValue("syncStatus")
+        sendEvent(name: "syncStatus", value: "force")
+    } else {
+    	if (state.prevSyncState != null) {
+        	sendEvent(name: "syncStatus", value: state.prevSyncState)
+        } else {
+            sendEvent(name: "syncStatus", value: "synced")
+        }
     }
 }
 
@@ -221,21 +415,15 @@ def seqToValue(sequance) {
 	sequance = sequance as String
     def Integer size = sequance.length()
     def Integer result = 0
-    if (size < 2) {
-    	log.debug "Sequence too short!"
-        return null
-    } else {
-        if (size > 5) { size = 5; log.debug "Sequence too long, will be trimmed." }
-        (0..size-1).each{ n ->
+    if (size > 5) { size = 5; log.info "Sequence too long, will be trimmed." }
+    (0..size-1).each{ n ->
             result = result + ((sequance[n] as Integer) * (8**n))
-        }
-        return result
     }
+    return result
 }
 
-def modToValue(mode) {
+def modeToValue(mode) {
 	def Integer result
-    log.debug "mod: $mode"
 	switch (mode) {
     	case "1 Click": result = 1; break;
         case "2 Clicks": result = 2; break;
@@ -256,48 +444,10 @@ def modToValue(mode) {
 	return result
 }
 
-def installed() {
-	initialize()
-}
-
-def updated() {
-	initialize()
-    configure()
-}
-
-def initialize() {
-	sendEvent(name: "numberOfButtons", value: 30)
-}
-
-def seqConfig(value,paramNr) {
-	def Integer tempValue
-    def short valPart1
-    def short valPart2
-    
-	tempValue = seqToValue(value)
-    if (tempValue) {
-       	valPart1 = tempValue & 0xFF
-        valPart2 = (tempValue >> 8) & 0xFF
-        //log.debug parameterMap()["seq1"]
-        return zwave.configurationV1.configurationSet(configurationValue: [valPart2, valPart1], parameterNumber: paramNr as Integer, size: 2)
-    } else {
-    	return null
-    }
-}
-
-def configure() {
-	def cmds = []
-    
-    if ( unlockSeq ) {
-    	cmds << seqConfig(unlockSeq, parameterMap()["unlockSeq"][0] as Integer)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["unlockSeq"][0] as Integer)
-    }
-    if ( lockBtn || lockTim ) {
-    	def Integer timeVal
+def btnTimToValue () {
     	def Integer buttonVal
+    	def Integer timeVal
         def Integer tempValue
-    	def short valPart1
-    	def short valPart2
         if (lockBtn) { buttonVal = (lockBtn as Integer)*256 } else { buttonVal = 0 }
         if (lockTim) { timeVal = lockTim } else { timeVal = 0 }
         
@@ -305,147 +455,36 @@ def configure() {
         if (timeVal < 5 && timeVal != 0) { timeVal = 5 }
         if (buttonVal > 1536) { buttonVal = 1536 }
         
-        tempValue = buttonVal+timeVal
-       	valPart1 = tempValue & 0xFF
-        valPart2 = (tempValue >> 8) & 0xFF
-        cmds << zwave.configurationV1.configurationSet(configurationValue: [valPart2, valPart1], parameterNumber: 2 , size: 2)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: 2)
-    }
-    if (seq1) {
-        cmds << seqConfig(seq1, parameterMap()["seq1"][0] as Integer)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["seq1"][0] as Integer)
-    }
-    if (seq2) {
-        cmds << seqConfig(seq2, parameterMap()["seq2"][0] as Integer)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["seq2"][0] as Integer)
-    }
-    if (seq3) {
-        cmds << seqConfig(seq3, parameterMap()["seq3"][0] as Integer)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["seq3"][0] as Integer)
-    }
-    if (seq4) {
-        cmds << seqConfig(seq4, parameterMap()["seq4"][0] as Integer)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["seq4"][0] as Integer)
-    }
-    if (seq5) {
-        cmds << seqConfig(seq5, parameterMap()["seq5"][0] as Integer)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["seq5"][0] as Integer)
-    }
-    if (seq6) {
-        cmds << seqConfig(seq6, parameterMap()["seq6"][0] as Integer)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["seq6"][0] as Integer)
-    }
-    if (seqTim && seqTim <= 255) {
-    	cmds << zwave.configurationV1.configurationSet(configurationValue: [seqTim as Integer], parameterNumber: parameterMap()["seqTim"][0] as Integer , size: 1)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["seqTim"][0] as Integer)
-    }
-    if (btn1mode) {
-    	cmds << zwave.configurationV1.configurationSet(configurationValue: [modToValue(btn1mode)], parameterNumber: parameterMap()["btn1mode"][0] as Integer  , size: 1)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["btn1mode"][0]  as Integer)
-    }
-    if (btn2mode) {
-    	cmds << zwave.configurationV1.configurationSet(configurationValue: [modToValue(btn2mode)], parameterNumber: parameterMap()["btn2mode"][0] as Integer , size: 1)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["btn2mode"][0] as Integer)
-    }
-    if (btn3mode) {
-    	cmds << zwave.configurationV1.configurationSet(configurationValue: [modToValue(btn3mode)], parameterNumber: parameterMap()["btn3mode"][0] as Integer , size: 1)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["btn3mode"][0] as Integer)
-    }
-    if (btn4mode) {
-    	cmds << zwave.configurationV1.configurationSet(configurationValue: [modToValue(btn4mode)], parameterNumber: parameterMap()["btn4mode"][0] as Integer , size: 1)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["btn4mode"][0] as Integer)
-    }
-    if (btn5mode) {
-    	cmds << zwave.configurationV1.configurationSet(configurationValue: [modToValue(btn5mode)], parameterNumber: parameterMap()["btn5mode"][0] as Integer , size: 1)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["btn5mode"][0] as Integer)
-    }
-    if (btn6mode) {
-    	cmds << zwave.configurationV1.configurationSet(configurationValue: [modToValue(btn6mode)], parameterNumber: parameterMap()["btn6mode"][0] as Integer , size: 1)
-    	cmds << zwave.configurationV1.configurationGet(parameterNumber: parameterMap()["btn6mode"][0] as Integer)
-    }
-    
-    /*def cmds = []
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [15], parameterNumber: 21, size: 1)
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [15], parameterNumber: 22, size: 1)
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [15], parameterNumber: 23, size: 1)
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [15], parameterNumber: 24, size: 1)
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [15], parameterNumber: 25, size: 1)
-    cmds << zwave.configurationV1.configurationSet(configurationValue: [15], parameterNumber: 26, size: 1)
-    cmds << zwave.configurationV1.configurationGet(parameterNumber: 3)
-    cmds << zwave.configurationV1.configurationGet(parameterNumber: 22)
-    cmds << zwave.configurationV1.configurationGet(parameterNumber: 23)
-    cmds << zwave.configurationV1.configurationGet(parameterNumber: 24)
-    cmds << zwave.configurationV1.configurationGet(parameterNumber: 25)
-    cmds << zwave.configurationV1.configurationGet(parameterNumber: 26)
-   	//return zwave.securityV1.securityMessageEncapsulation().encapsulate(cmd).format()*/
-    delayBetween(cmds.collect{zwave.securityV1.securityMessageEncapsulation().encapsulate(it).format()}, 200)   
+        return buttonVal+timeVal
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.configurationv1.ConfigurationReport cmd) {	 
-	log.debug "${cmd}"	
+def paramValue(value, size) {
+	def Integer tempValue
+    def short valPart1
+    def short valPart2
+    if (size == 1) {
+    	return [value]
+    } else {
+    	valPart1 = value & 0xFF
+        valPart2 = (value >> 8) & 0xFF
+        return [valPart2, valPart1]
+    }
 }
 
-
-def parameterMap() { [ unlockSeq:[1,2], lockBtnTim:[2,2], seq1:[3,2], seq2:[4,2], seq3:[5,2], seq4:[6,2], seq5:[7,2], seq6:[8,2], seqTim:[9,1], btn1mode:[21,1], btn2mode:[22,1], btn3mode:[23,1], btn4mode:[24,1], btn5mode:[25,1], btn6mode:[26,1] ] } // btn1mode:[parNumber,size]
-/* Parameters as follows:
-1 - Lock Mode - unlocking sequence
-2 - Lock Mode - time to lock and locking button
-3 to 8 - Sequences
-9 - Sequences - timeout
-21 to 26 - Scene activation modes (enabling disabling double, tripple clicks etc)
-*/
-
-/*Command Classes
-
-COMMAND_CLASS_ZWAVEPLUS_INFO v2
-0x5E: 2
-
-COMMAND_CLASS_ASSOCIATION_GRP_INFO 
-0x59: 1
-
-COMMAND_CLASS_BATTERY
-0x80: 1
-
-COMMAND_CLASS_CRC_16_ENCAP
-0x56: 1
-
-COMMAND_CLASS_FIRMWARE_UPDATE_MD v3
-0x7A: 3
-
-COMMAND_CLASS_POWERLEVEL
-0x73: 1
-
-COMMAND_CLASS_SECURITY
-0x98: 1
-
-COMMAND_CLASS_APPLICATION_STATUS
-0x22: 1
-
-SEC:
-COMMAND_CLASS_ASSOCIATION v2
-0x85: 2
-
-COMMAND_CLASS_CENTRAL_SCENE v3
-0x5B: 1  //?????
-
-COMMAND_CLASS_CONFIGURATION
-0x70: 1
-
-COMMAND_CLASS_DEVICE_RESET_LOCALLY
-0x5A: 1
-
-COMMAND_CLASS_MANUFACTURER_SPECIFIC v2
-0x72: 2
-
-COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION v2
-0x8E: 2
-
-COMMAND_CLASS_VERSION v2
-0x86: 2
-
-COMMAND_CLASS_WAKE_UP v2
-0x84: 2
-
-COMMAND_CLASS_PROTECTION v2
-0x75: 2
-*/
+def parameterMap() { return [ 
+	[key: "unlockSeq", num: 1, size: 2, descr: "Unlocking Sequence", type: "sequence"], 
+    [key: "lockBtnTim", num: 2, size: 2, descr: "Lock Time and Button", type: "buttonTime"], 
+    [key: "seq1", num: 3, size: 2, descr: "First Sequence", type: "sequence"], 
+    [key: "seq2", num: 4, size: 2, descr: "Second Sequence", type: "sequence"], 
+    [key: "seq3", num: 5, size: 2, descr: "Third Sequence", type: "sequence"], 
+    [key: "seq4", num: 6, size: 2, descr: "Fourth Sequence", type: "sequence"], 
+    [key: "seq5", num: 7, size: 2, descr: "Fifth Sequence", type: "sequence"], 
+    [key: "seq6", num: 8, size: 2, descr: "Sixth Sequence", type: "sequence"], 
+    [key: "seqTim", num: 9, size: 1, descr: "Sequence Timeout", type: "number"], 
+    [key: "btn1mode", num: 21, size: 1, descr: "Square (1) Button Mode", type: "mode"], 
+    [key: "btn2mode", num: 22, size: 1, descr: "Circle (2) Button Mode", type: "mode"], 
+    [key: "btn3mode", num: 23, size: 1, descr: "Saltire (3) Button Mode", type: "mode"], 
+    [key: "btn4mode", num: 24, size: 1, descr: "Triangle (4) Button Mode", type: "mode"], 
+    [key: "btn5mode", num: 25, size: 1, descr: "Minus (5) Button Mode", type: "mode"], 
+    [key: "btn6mode", num: 26, size: 1, descr: "Plus (6) Button Mode", type: "mode"] 
+] } 
