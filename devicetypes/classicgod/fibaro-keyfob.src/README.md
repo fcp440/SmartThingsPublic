@@ -1,4 +1,4 @@
-#Fibaro KeyFob - 30 actions, Z-Wave Plus compatible, battery-powered, compact remote control 
+# Fibaro KeyFob - 30 actions, Z-Wave Plus compatible, battery-powered, compact remote control 
 
 Fibaro KeyFob is a six button Z-Wave Plus remote that enables user to execute 30 action through the combination of single, double and triple presses, holding the buttons and 6 programmable 2 to 5 button sequences. The remote can also be protected against unauthorized use by 2 to 5 button sequence (check Lock Mode configuration section below).
 
