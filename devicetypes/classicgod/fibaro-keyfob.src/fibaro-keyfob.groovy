@@ -434,13 +434,13 @@ def forceSync() {
 	}
 }
 
-def seqToValue(sequance) { 
-	sequance = sequance as String
-	def Integer size = sequance.length()
+def seqToValue(sequence) { 
+	sequence = sequence as String
+	def Integer size = sequence.length()
 	def Integer result = 0
 	if (size > 5) { size = 5; log.info "Sequence too long, will be trimmed." }
 	(0..size-1).each{ n ->
-			result = result + ((sequance[n] as Integer) * (8**n))
+			result = result + ((sequence[n] as Integer) * (8**n))
 	}
 	return result
 }
