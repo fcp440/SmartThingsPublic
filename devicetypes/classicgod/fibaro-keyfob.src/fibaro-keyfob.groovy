@@ -37,7 +37,7 @@ metadata {
 		command "menuButton"
 
 		fingerprint deviceId: "0x1801" , inClusters: "0x5E,0x59,0x80,0x56,0x7A,0x73,0x98,0x22,0x85,0x5B,0x70,0x5A,0x72,0x8E,0x86,0x84,0x75"
-        fingerprint deviceId: "0x1801" , inClusters: "0x5E,0x85,0x59,0x80,0x5B,0x70,0x56,0x5A,0x7A,0x72,0x8E,0x73,0x86,0x84,0x75,0x22"
+		fingerprint deviceId: "0x1801" , inClusters: "0x5E,0x85,0x59,0x80,0x5B,0x70,0x56,0x5A,0x7A,0x72,0x8E,0x73,0x86,0x84,0x75,0x22"
 	}
 
 	tiles (scale: 2){
@@ -198,15 +198,15 @@ def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulat
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.crc16encapv1.Crc16Encap cmd) {
-    def versions = [0x31: 3, 0x30: 2, 0x84: 2, 0x9C: 1, 0x70: 2]
-    def version = versions[cmd.commandClass as Integer]
-    def ccObj = version ? zwave.commandClass(cmd.commandClass, version) : zwave.commandClass(cmd.commandClass)
-    def encapsulatedCommand = ccObj?.command(cmd.command)?.parse(cmd.data)
-    if (!encapsulatedCommand) {
-    	log.debug "Could not extract command from $cmd"
-    } else {
-    	zwaveEvent(encapsulatedCommand)
-    }
+	def versions = [0x31: 3, 0x30: 2, 0x84: 2, 0x9C: 1, 0x70: 2]
+	def version = versions[cmd.commandClass as Integer]
+	def ccObj = version ? zwave.commandClass(cmd.commandClass, version) : zwave.commandClass(cmd.commandClass)
+	def encapsulatedCommand = ccObj?.command(cmd.command)?.parse(cmd.data)
+	if (!encapsulatedCommand) {
+		log.debug "Could not extract command from $cmd"
+	} else {
+		zwaveEvent(encapsulatedCommand)
+	}
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd) {
