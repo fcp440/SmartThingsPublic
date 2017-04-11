@@ -35,4 +35,4 @@ To activate it you have to:
 * Added new mainTile - the main menu now shows a push button instead of battery percentage. Pressing it activates the button which number can be configured in the settings menu (Button 1 by default).
 
 **[UPDATE] 2017-04-07:**
-* Bug fixes suggested by @erocm1231 (Thank you! :slight_smile: )
+* Bug fixes suggested by @erocm1231 (Thank you! :) )
