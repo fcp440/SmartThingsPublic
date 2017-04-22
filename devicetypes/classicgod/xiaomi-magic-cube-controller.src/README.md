@@ -33,7 +33,3 @@ DTH also offers emulated "Three Axis" capability for easy usage in SmartApps lik
 * Device does not send any data if gesture is unrecognized - rotating the cube randomly in the air and placing it down will most likely not send any event.
 * The DTH will correct last known orientation and send missing flip/face activation events if needed as soon as it's gets the orientation data form the device.
 * Due to the above rotation and shake events can execute for wrong faces if the flip gestures are not performed correctly (like rotating the cube randomly in the air)
-
-Pics:
-<img src="/uploads/default/original/3X/9/9/99eaeafcaa32e71877606290c12947ecd195ee51.PNG" width="140" height="250"><img src="/uploads/default/original/3X/b/0/b0bc70b2f494cc4a64edf84a0b10cb9cb2473a59.PNG" width="140" height="250"><img src="/uploads/default/original/3X/9/e/9e2ab28270f136263dc25e1ce09d904188528457.PNG" width="140" height="250">
-
