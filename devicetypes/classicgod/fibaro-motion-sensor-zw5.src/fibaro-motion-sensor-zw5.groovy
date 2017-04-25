@@ -38,7 +38,6 @@ metadata {
 				attributeState("inactive", label:"no motion", icon:"st.motion.motion.inactive", backgroundColor:"#ffffff")
 				attributeState("active", label:"motion", icon:"st.motion.motion.active", backgroundColor:"#00a0dc")   
 			}
-			
 			tileAttribute("device.lastEvent", key:"SECONDARY_CONTROL") {
 				attributeState("val", label:'${currentValue}')
 			}  
