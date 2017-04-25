@@ -258,7 +258,7 @@ def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd) {
 			//cmdsGet << zwave.wakeUpV2.wakeUpIntervalGet() //not roking becaouse SmartThings... ;D
 			cmdCount = cmdCount + 1
 		}
-        logging("${device.displayName} - Not synced, syncing ${cmdCount} parameters", "info")
+		logging("${device.displayName} - Not synced, syncing ${cmdCount} parameters", "info")
 		sendEvent(name: "syncStatus", value: "inProgress")
 		runIn((5+cmdCount*1.5), syncCheck)
 	}
@@ -279,7 +279,7 @@ def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd) {
 
 def zwaveEvent(physicalgraph.zwave.commands.configurationv1.ConfigurationReport cmd) {
 	def paramKey = parameterMap().find( {it.num == cmd.parameterNumber } ).key
-    logging("${device.displayName} - Parameter ${paramKey} value is ${cmd.scaledConfigurationValue} expected " + state."$paramKey".value, "info")
+	logging("${device.displayName} - Parameter ${paramKey} value is ${cmd.scaledConfigurationValue} expected " + state."$paramKey".value, "info")
 	if (state."$paramKey".value == cmd.scaledConfigurationValue) {
 		state."$paramKey".state = "synced"
 	}
@@ -301,10 +301,10 @@ def syncCheck() {
 		}
 	}
 	if (count == 0) {
-    	logging("${device.displayName} - Sync Complete","info")
+		logging("${device.displayName} - Sync Complete","info")
 		sendEvent(name: "syncStatus", value: "synced")
 	} else {
-    	logging("${device.displayName} Sync Incomplete","info")
+		logging("${device.displayName} Sync Incomplete","info")
 		if (device.currentValue("syncStatus") != "failed") {
 			sendEvent(name: "syncStatus", value: "incomplete")
 		}
@@ -398,7 +398,7 @@ def parse(String description) {
 def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulation cmd) {
 	def encapsulatedCommand = cmd.encapsulatedCommand(cmdVersions()) 
 	if (encapsulatedCommand) {
-    	logging("${device.displayName} - Parsed SecurityMessageEncapsulation into: ${encapsulatedCommand}")
+		logging("${device.displayName} - Parsed SecurityMessageEncapsulation into: ${encapsulatedCommand}")
 		zwaveEvent(encapsulatedCommand)
 	} else {
 		log.warn "Unable to extract secure cmd from $cmd"
@@ -413,7 +413,7 @@ def zwaveEvent(physicalgraph.zwave.commands.crc16encapv1.Crc16Encap cmd) {
 	if (!encapsulatedCommand) {
 		log.warn "Could not extract crc16 command from $cmd"
 	} else {
-    	logging("${device.displayName} - Parsed Crc16Encap into: ${encapsulatedCommand}")
+		logging("${device.displayName} - Parsed Crc16Encap into: ${encapsulatedCommand}")
 		zwaveEvent(encapsulatedCommand)
 	}
 }
@@ -432,7 +432,7 @@ private secEncap(physicalgraph.zwave.Command cmd) {
 private crcEncap(physicalgraph.zwave.Command cmd) {
 		logging("${device.displayName} - encapsulating command using CRC16 Encapsulation, command: $cmd","info")
 		zwave.crc16EncapV1.crc16Encap().encapsulate(cmd).format() // doesn't work righ now because SmartThings...
-	   //"5601${cmd.format()}0000"
+		//"5601${cmd.format()}0000"
 }
 
 private encap(physicalgraph.zwave.Command cmd) {
