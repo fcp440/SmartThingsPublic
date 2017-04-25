@@ -42,8 +42,8 @@ metadata {
 				attributeState("val", label:'${currentValue}')
 			}  
 		}
-		valueTile("temper", "device.tamper", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
-			state "temper", label:'Tamper:\n${currentValue}'
+		valueTile("tamper", "device.tamper", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
+			state "val", label:'Tamper:\n${currentValue}'
 		}
 		valueTile("temperature", "device.temperature", inactiveLabel: false, width: 2, height: 2) {
 			state "temperature", label:'${currentValue}°',
@@ -75,7 +75,7 @@ metadata {
 			state "force", label:"Force", action:"forceSync", backgroundColor: "#e86d13", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-motion-sensor-zw5.src/images/sync_icon.png"
 		}
 		main "FGMS"
-		details(["FGMS","temper","temperature","illuminance","motionTile","syncStatus","battery"])
+		details(["FGMS","tamper","temperature","illuminance","motionTile","syncStatus","battery"])
 	}
 	
 	preferences {
