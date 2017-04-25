@@ -520,5 +520,4 @@ private parameterMap() {[
 	[key: "ledTemperatureBlue", num: 86, size: 2, type: "number", def: 18, min: 0, max: 255, title: "Temperature for blue colour", descr: null], 
 	[key: "ledTemperatureRed", num: 87, size: 2, type: "number", def: 28, min: 0, max: 255, title: "Temperature for red colour", descr: null], 
 	[key: "ledTamperAlarm", num: 89, size: 1, type: "enum", options: [0: "0 - tamper alarm is not indicated", 1: "1 - tamper alarm is indicated (default)"], def: "1", title: "Tamper alarm", descr: null]
-	]
-}
+]}
