@@ -3,6 +3,8 @@
  *
  *  Copyright 2017 Artur Draga
  *
+ *  Special thanks to Kevin LaFramboise (krlaframboise)
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
  *
@@ -202,7 +204,7 @@ private axisEvent() {
 
 // Parameter configuration, synchronization and verification
 def updated() {
-	logging("${device.displayName} - Executing updated()","info")
+	logging("${device.displayName} - Executing axisEvent()","info")
 	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
 	def syncRequired = 0
 	parameterMap().each {
@@ -219,6 +221,7 @@ def updated() {
 		if (state.wakeUpInterval == null) { state.wakeUpInterval = [value: null, state: "synced"] }
 		if (state.wakeUpInterval.value != settings.wakeUpInterval as Integer) {
 			syncRequired = 1
+			sendEvent(name: "checkInterval", value: (settings.wakeUpInterval as Integer) * 4 + 120, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID])
 			state.wakeUpInterval.value = settings.wakeUpInterval as Integer
 			state.wakeUpInterval.state = "notSynced"
 		}
@@ -277,6 +280,11 @@ def zwaveEvent(physicalgraph.zwave.commands.configurationv1.ConfigurationReport 
 	}
 }
 
+def zwaveEvent(physicalgraph.zwave.commands.applicationstatusv1.ApplicationRejectedRequest cmd) {
+	logging("${device.displayName} - rejected request!","warn")
+	if (device.currentValue("syncStatus") == "inProgress") { sendEvent(name: "syncStatus", value:"failed") }
+}
+
 def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpIntervalReport  cmd) { 
 	log.debug "interval! " + cmd
 }
@@ -303,7 +311,7 @@ def syncCheck() {
 	}
 }
 
-// Copied from Fibaro official code just in case. We don't call get for them so should never execute
+// Copied from Fibaro official code.
 def zwaveEvent(physicalgraph.zwave.commands.manufacturerspecificv2.ManufacturerSpecificReport cmd) { 
 	log.debug "manufacturerId:   ${cmd.manufacturerId}"
 	log.debug "manufacturerName: ${cmd.manufacturerName}"
@@ -337,7 +345,7 @@ def zwaveEvent(physicalgraph.zwave.commands.versionv1.VersionReport cmd) {
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.deviceresetlocallyv1.DeviceResetLocallyNotification cmd) {
-	log.info "${device.displayName}: received command: $cmd - device has reset itself"
+	log.warn "${device.displayName} - received command: $cmd - device has reset itself"
 }
 
 def configure() {
