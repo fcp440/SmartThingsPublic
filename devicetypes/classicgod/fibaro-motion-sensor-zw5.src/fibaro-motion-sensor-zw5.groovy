@@ -202,7 +202,7 @@ private axisEvent() {
 
 // Parameter configuration, synchronization and verification
 def updated() {
-	logging("${device.displayName} - Executing axisEvent()","info")
+	logging("${device.displayName} - Executing updated()","info")
 	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
 	def syncRequired = 0
 	parameterMap().each {
