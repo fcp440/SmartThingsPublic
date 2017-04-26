@@ -441,9 +441,9 @@ def sendState() {
 def updated() {
 	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
 	switch(settings.cubeMode) {
-		case "1": sendEvent(name: "numberOfButtons", value: 7); break
-		case "2": sendEvent(name: "numberOfButtons", value: 36); break
-		default: sendEvent(name: "numberOfButtons", value: 43); break
+		case "1": sendEvent(name: "numberOfButtons", value: 36); break
+		case "2": sendEvent(name: "numberOfButtons", value: 43); break
+		default: sendEvent(name: "numberOfButtons", value: 7); break
 	}
 	state.lastUpdated = now()
 }
