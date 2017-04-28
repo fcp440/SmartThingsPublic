@@ -21,32 +21,32 @@ Avaible parameters are (I've purposefully skipped parameter nr 3 since manufactu
 
 * Wake Up interval
 * Motion Detection Settings:
-⋅⋅* Sensitivity
-⋅⋅* Blind time
- * Time window
- * Alarm cancellation delay
- * Operating mode
- * Night/day
+  * Sensitivity
+  * Blind time
+  * Time window
+  * Alarm cancellation delay
+  * Operating mode
+  * Night/day
 * Tamper Alarm Settings:
- * Sensitivity
- * Alarm cancellation delay
- * Operating mode
- * Alarm cancellation
+  * Sensitivity
+  * Alarm cancellation delay
+  * Operating mode
+  * Alarm cancellation
 * Illuminance Reporting Settings:
- * Reporting threshold
- * Reporting interval
+  * Reporting threshold
+  * Reporting interval
 * Temperature Reporting Settings:
- * Reporting threshold
- * Measuring interval
- * Reporting Interval
- * Temperature offset
+  * Reporting threshold
+  * Measuring interval
+  * Reporting Interval
+  * Temperature offset
 * Led Indicator Settings:
- * Signalling mode
- * Brightness
- * Illuminance for low indicator brightness
- * Illuminance for high indicator brightness
- * Temperature for blue colour
- * Temperature for red colour
- * Tamper alarm
+  * Signalling mode
+  * Brightness
+  * Illuminance for low indicator brightness
+  * Illuminance for high indicator brightness
+  * Temperature for blue colour
+  * Temperature for red colour
+  * Tamper alarm
 
 For details on how parameters work if not self explanatory refer to manual for the device: http://manuals.fibaro.com/motion-sensor/
