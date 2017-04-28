@@ -21,8 +21,8 @@ Avaible parameters are (I've purposefully skipped parameter nr 3 since manufactu
 
 * Wake Up interval
 * Motion Detection Settings:
-..* Sensitivity
-..* Blind time
+⋅⋅* Sensitivity
+⋅⋅* Blind time
  * Time window
  * Alarm cancellation delay
  * Operating mode
