@@ -436,7 +436,7 @@ private crcEncap(physicalgraph.zwave.Command cmd) {
 }
 
 private encap(physicalgraph.zwave.Command cmd) {
-	if (zwaveInfo.zw.contains("s") && zwaveInfo.sec.contains(Integer.toHexString(cmd.commandClassId))) { 
+	if (zwaveInfo.zw.contains("s") && zwaveInfo.sec.contains(Integer.toHexString(cmd.commandClassId).toUpperCase())) { 
 		// if device is included securly and the command is on list of commands dupported with secure encapsulation
 		secEncap(cmd)
 	} else if (zwaveInfo.cc.contains("56")){ 
