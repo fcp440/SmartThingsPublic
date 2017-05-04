@@ -409,8 +409,12 @@ private encap(Map encapMap) {
 	encap(encapMap.cmd, encapMap.ep)
 }
 
-private encapSequence(cmds, delay=250) {
+private encapSequence(cmds, Integer delay=250) {
 	delayBetween(cmds.collect{ encap(it) }, delay)
+}
+
+private encapSequence(cmds, Integer delay, Integer ep) {
+	delayBetween(cmds.collect{ encap(it, ep) }, delay)
 }
 
 private List intToParam(Long value, Integer size = 1) {
