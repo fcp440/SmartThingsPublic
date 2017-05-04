@@ -381,10 +381,12 @@ private crcEncap(physicalgraph.zwave.Command cmd) {
 		//"5601${cmd.format()}0000"
 }
 
-private encap(physicalgraph.zwave.Command cmd, Integer ep = null) {
-	if (ep) {
-		cmd = zwave.multiChannelV3.multiChannelCmdEncap(destinationEndPoint:ep).encapsulate(cmd)
-	}
+private multiEncap(physicalgraph.zwave.Command cmd, Integer ep) {
+	logging("${device.displayName} - encapsulating command using Multi Channel Encapsulation, ep: $ep command: $cmd","info")
+	zwave.multiChannelV3.multiChannelCmdEncap(destinationEndPoint:ep).encapsulate(cmd)
+}
+
+private encap(physicalgraph.zwave.Command cmd) {
 	if (zwaveInfo.zw.contains("s") && zwaveInfo.sec.contains(Integer.toHexString(cmd.commandClassId).toUpperCase())) { 
 		secEncap(cmd)
 	} else if (zwaveInfo.cc.contains("56")){ 
@@ -393,6 +395,10 @@ private encap(physicalgraph.zwave.Command cmd, Integer ep = null) {
 		logging("${device.displayName} - no encapsulation supported for command: $cmd","info")
 		cmd.format()
 	}
+}
+
+private encap(physicalgraph.zwave.Command cmd, Integer ep) {
+	encap(multiEncap(cmd, ep))
 }
 
 private encap(List encapList) {
