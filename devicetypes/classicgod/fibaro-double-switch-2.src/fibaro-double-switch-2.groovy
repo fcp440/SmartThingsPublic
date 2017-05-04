@@ -122,7 +122,6 @@ def childReset() {
 	sendHubCommand(cmds, 1000)
 }
 
-
 def refresh() {
 	def cmds = []
 	cmds << [zwave.meterV3.meterGet(scale: 0), 1]
