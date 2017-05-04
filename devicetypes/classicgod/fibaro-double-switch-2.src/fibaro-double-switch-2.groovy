@@ -122,6 +122,7 @@ def childReset() {
 	sendHubCommand(cmds, 1000)
 }
 
+
 def refresh() {
 	def cmds = []
 	cmds << [zwave.meterV3.meterGet(scale: 0), 1]
@@ -259,13 +260,13 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null) {
 			case 0:
 				sendEvent([name: "energy", value: cmd.scaledMeterValue, unit: "kWh"])
 				if (!device.currentValue("combinedMeter").contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." ) {
-					sendEvent([name: "combinedMeter", value: "${device.currentValue("power")} W / ${cmd.scaledMeterValue} kWh"])
+					sendEvent([name: "combinedMeter", value: "${device.currentValue("power")} W / ${cmd.scaledMeterValue} kWh", displayed: false])
 				}
 				break
 			case 2:
 				sendEvent([name: "power", value: cmd.scaledMeterValue, unit: "W"])
 				if (!device.currentValue("combinedMeter").contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." ) {
-					sendEvent([name: "combinedMeter", value: "${cmd.scaledMeterValue} W / ${device.currentValue("energy")} kWh"])
+					sendEvent([name: "combinedMeter", value: "${cmd.scaledMeterValue} W / ${device.currentValue("energy")} kWh", displayed: false])
 				}
 				break
 		}
@@ -275,7 +276,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null) {
 				childDevices.each { child ->
 					if (child.deviceNetworkId == "${device.deviceNetworkId}-2") { 
 						child.sendEvent([name: "energy", value: cmd.scaledMeterValue, unit: "kWh"]) 
-						child.sendEvent([name: "combinedMeter", value: "${child.currentValue("power")} W / ${cmd.scaledMeterValue} kWh"])
+						child.sendEvent([name: "combinedMeter", value: "${child.currentValue("power")} W / ${cmd.scaledMeterValue} kWh", displayed: false])
 					}
 				}
 				break
@@ -283,7 +284,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null) {
 				childDevices.each { child ->
 					if (child.deviceNetworkId == "${device.deviceNetworkId}-2") { 
 						child.sendEvent([name: "power", value: cmd.scaledMeterValue, unit: "W"]) 
-						child.sendEvent([name: "combinedMeter", value: "${cmd.scaledMeterValue} W / ${child.currentValue("energy")} kWh"])
+						child.sendEvent([name: "combinedMeter", value: "${cmd.scaledMeterValue} W / ${child.currentValue("energy")} kWh", displayed: false])
 					}
 				}
 				break
