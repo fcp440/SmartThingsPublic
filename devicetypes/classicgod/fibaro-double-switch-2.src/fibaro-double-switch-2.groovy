@@ -7,7 +7,7 @@
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *	  http://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
  *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
@@ -178,7 +178,7 @@ def updated() {
 def syncCheck() {
 	logging("${device.displayName} - Executing syncCheck()","info")
 	def Integer count = 0
-	if (device.currentValue("combinedMeter").contains("SYNC") && !device.currentValue("combinedMeter") != "SYNC OK.") {
+	if (device.currentValue("combinedMeter")?.contains("SYNC") && device.currentValue("combinedMeter") != "SYNC OK.") {
 		parameterMap().each {
 			if (state."$it.key".state == "notSynced" ) {
 				count = count + 1
@@ -258,13 +258,13 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null) {
 		switch (cmd.scale) {
 			case 0:
 				sendEvent([name: "energy", value: cmd.scaledMeterValue, unit: "kWh"])
-				if (!device.currentValue("combinedMeter").contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." ) {
+				if (!device.currentValue("combinedMeter")?.contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." || device.currentValue("combinedMeter") == null ) {
 					sendEvent([name: "combinedMeter", value: "${device.currentValue("power")} W / ${cmd.scaledMeterValue} kWh", displayed: false])
 				}
 				break
 			case 2:
 				sendEvent([name: "power", value: cmd.scaledMeterValue, unit: "W"])
-				if (!device.currentValue("combinedMeter").contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." ) {
+				if (!device.currentValue("combinedMeter")?.contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." || device.currentValue("combinedMeter") == null ) {
 					sendEvent([name: "combinedMeter", value: "${cmd.scaledMeterValue} W / ${device.currentValue("energy")} kWh", displayed: false])
 				}
 				break
