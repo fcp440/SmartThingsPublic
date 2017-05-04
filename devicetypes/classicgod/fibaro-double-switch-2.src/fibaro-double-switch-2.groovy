@@ -155,7 +155,7 @@ def updated() {
 	parameterMap().each {
 		if(settings."$it.key" != null) {
 			if (state."$it.key" == null) { state."$it.key" = [value: null, state: "synced"] }
-			if (state."$it.key".value != settings."$it.key" as Integer) {
+			if (state."$it.key".value != settings."$it.key" as Integer || state."$it.key".state == "notSynced") {
 				state."$it.key".value = settings."$it.key" as Integer
 				state."$it.key".state = "notSynced"
 				cmds << zwave.configurationV2.configurationSet(configurationValue: intToParam(state."$it.key".value, it.size), parameterNumber: it.num, size: it.size)
