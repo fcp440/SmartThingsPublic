@@ -206,6 +206,10 @@ private createChildDevices() {
 	)
 }
 
+private getChild(Integer childNum) {
+	return childDevices.find({ it.deviceNetworkId == "${device.deviceNetworkId}-${childNum}" })
+}
+
 //event handlers related to configuration and sync
 def zwaveEvent(physicalgraph.zwave.commands.configurationv2.ConfigurationReport cmd) {
 	def paramKey = parameterMap().find( {it.num == cmd.parameterNumber } ).key
@@ -229,26 +233,13 @@ def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd) {
 
 def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinaryReport cmd, ep=null) {
 	logging("${device.displayName} - SwitchBinaryReport received, value: ${cmd.value} ep: $ep","info")
-	if (ep==1) {
-		switch (cmd.value) {
-			case 0:
-				sendEvent([name: "switch", value: "off"])
-				break
-			default:
-				sendEvent([name: "switch", value: "on"])
-		}   
-	} else if (ep==2) {
-		switch (cmd.value) {
-			case 0:
-				childDevices.each { child ->
-					if (child.deviceNetworkId == "${device.deviceNetworkId}-2") { child.sendEvent([name: "switch", value: "off"]) }
-				}
-				break
-			default:
-				childDevices.each { child ->
-					if (child.deviceNetworkId == "${device.deviceNetworkId}-2") { child.sendEvent([name: "switch", value: "on"]) }
-				}
-		}   
+	switch (ep) {
+		case 1: 
+			sendEvent([name: "switch", value: (cmd.value == 0 ) ? "off": "on"])
+			break
+		case 2: 
+			getChild(2)?.sendEvent([name: "switch", value: (cmd.value == 0 ) ? "off": "on"]) 
+			break
 	}
 }
 
@@ -258,36 +249,24 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null) {
 		switch (cmd.scale) {
 			case 0:
 				sendEvent([name: "energy", value: cmd.scaledMeterValue, unit: "kWh"])
-				if (!device.currentValue("combinedMeter")?.contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." || device.currentValue("combinedMeter") == null ) {
-					sendEvent([name: "combinedMeter", value: "${device.currentValue("power")} W / ${cmd.scaledMeterValue} kWh", displayed: false])
-				}
 				break
 			case 2:
 				sendEvent([name: "power", value: cmd.scaledMeterValue, unit: "W"])
-				if (!device.currentValue("combinedMeter")?.contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." || device.currentValue("combinedMeter") == null ) {
-					sendEvent([name: "combinedMeter", value: "${cmd.scaledMeterValue} W / ${device.currentValue("energy")} kWh", displayed: false])
-				}
 				break
+		}
+		if (!device.currentValue("combinedMeter")?.contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." || device.currentValue("combinedMeter") == null ) {
+			sendEvent([name: "combinedMeter", value: "${device.currentValue("power")} W / ${device.currentValue("energy")} kWh", displayed: false])
 		}
 	} else if (ep==2) {
 		switch (cmd.scale) {
 			case 0:
-				childDevices.each { child ->
-					if (child.deviceNetworkId == "${device.deviceNetworkId}-2") { 
-						child.sendEvent([name: "energy", value: cmd.scaledMeterValue, unit: "kWh"]) 
-						child.sendEvent([name: "combinedMeter", value: "${child.currentValue("power")} W / ${cmd.scaledMeterValue} kWh", displayed: false])
-					}
-				}
+				getChild(2)?.sendEvent([name: "energy", value: cmd.scaledMeterValue, unit: "kWh"]) 
 				break
 			case 2:
-				childDevices.each { child ->
-					if (child.deviceNetworkId == "${device.deviceNetworkId}-2") { 
-						child.sendEvent([name: "power", value: cmd.scaledMeterValue, unit: "W"]) 
-						child.sendEvent([name: "combinedMeter", value: "${cmd.scaledMeterValue} W / ${child.currentValue("energy")} kWh", displayed: false])
-					}
-				}
+				getChild(2)?.sendEvent([name: "power", value: cmd.scaledMeterValue, unit: "W"]) 
 				break
 		}
+		getChild(2)?.sendEvent([name: "combinedMeter", value: "${getChild(2)?.currentValue("power")} W / ${getChild(2)?.currentValue("energy")} kWh", displayed: false])
 	}
 }
 
