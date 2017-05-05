@@ -90,6 +90,7 @@ def refresh() {
 	def cmds = []
 	cmds << zwave.meterV3.meterGet(scale: 0)
 	cmds << zwave.meterV3.meterGet(scale: 2)
+	cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 4)
 	encapSequence(cmds,1000)
 }
 
@@ -120,7 +121,7 @@ def updated() {
 	}
 	
 	state.lastUpdated = now()
-	response(encapSequence(cmds,1000))
+	if (cmds) { response(encapSequence(cmds,1000)) }
 }
 
 def syncCheck() {
@@ -162,29 +163,19 @@ def zwaveEvent(physicalgraph.zwave.commands.applicationstatusv1.ApplicationRejec
 
 //event handlers
 def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd) {
-	log.debug "basic"
+	//ignore
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinaryReport cmd) {
 	logging("${device.displayName} - SwitchBinaryReport received, value: ${cmd.value}","info")
-	switch (cmd.value) {
-		case 0:
-			sendEvent([name: "switch", value: "off"])
-			break
-		default:
-			sendEvent([name: "switch", value: "on"])
-	}   
+	sendEvent([name: "switch", value: (cmd.value == 0 ) ? "off": "on"])
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelReport cmd) {
 	logging("${device.displayName} - SensorMultilevelReport received, value: ${cmd.scaledSensorValue} scale: ${cmd.scale}","info")
-	switch (cmd.sensorType) {
-		case 4:
-			sendEvent([name: "power", value: cmd.scaledSensorValue, unit: "W"])
-			if (!device.currentValue("combinedMeter")?.contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." || device.currentValue("combinedMeter") == null ) {
-				sendEvent([name: "combinedMeter", value: "${cmd.scaledSensorValue} W / ${device.currentValue("energy")} kWh", displayed: false])
-			}
-			break
+	if (cmd.sensorType == 4) { 
+		sendEvent([name: "power", value: cmd.scaledSensorValue, unit: "W"]) 
+		updateCombinedMeter()
 	}
 }
 
@@ -193,16 +184,18 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
 	switch (cmd.scale) {
 		case 0:
 			sendEvent([name: "energy", value: cmd.scaledMeterValue, unit: "kWh"])
-			if (!device.currentValue("combinedMeter")?.contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." || device.currentValue("combinedMeter") == null ) {
-				sendEvent([name: "combinedMeter", value: "${device.currentValue("power")} W / ${cmd.scaledMeterValue} kWh", displayed: false])
-			}
 			break
 		case 2:
 			sendEvent([name: "power", value: cmd.scaledMeterValue, unit: "W"])
-			if (!device.currentValue("combinedMeter")?.contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." || device.currentValue("combinedMeter") == null ) {
-				sendEvent([name: "combinedMeter", value: "${cmd.scaledMeterValue} W / ${device.currentValue("energy")} kWh", displayed: false])
-			}
 			break
+	}
+	updateCombinedMeter()
+}
+
+//other
+private updateCombinedMeter() {
+	if (!device.currentValue("combinedMeter")?.contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." || device.currentValue("combinedMeter") == null ) {
+		sendEvent([name: "combinedMeter", value: "${device.currentValue("power")} W / ${device.currentValue("energy")} kWh", displayed: false])
 	}
 }
 
@@ -288,7 +281,7 @@ private multiEncap(physicalgraph.zwave.Command cmd, Integer ep) {
 }
 
 private encap(physicalgraph.zwave.Command cmd) {
-	if (zwaveInfo.zw.contains("s") && zwaveInfo.sec.contains(Integer.toHexString(cmd.commandClassId).toUpperCase())) { 
+	if (zwaveInfo.zw.contains("s")) { 
 		secEncap(cmd)
 	} else if (zwaveInfo.cc.contains("56")){ 
 		crcEncap(cmd)
