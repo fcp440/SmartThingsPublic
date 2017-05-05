@@ -96,7 +96,7 @@ metadata {
 	}
 }
 
-// Tiles - supporting functions
+// UI - supporting functions
 private getPrefsFor(String name) {
 	parameterMap().findAll( {it.key.contains(name)} ).each {
 		input (
@@ -136,23 +136,11 @@ def zwaveEvent(physicalgraph.zwave.commands.notificationv3.NotificationReport cm
 	logging("${device.displayName} - NotificationReport received for ${cmd.event}, parameter value: ${cmd.eventParameter[0]}", "info")
 	def lastTime = new Date().format("yyyy MMM dd EEE HH:mm:ss", location.timeZone)
 	if (cmd.notificationType == 7) {
-		switch (cmd.event) {
-			case 0:
-				if (cmd.eventParameter[0] == 3) {
-					sendEvent(name: "tamper", value: "inactive", descriptionText: "${device.displayName}: tamper alarm has been deactivated")
-				}
-				if (cmd.eventParameter[0] == 8) {
-					sendEvent(name: "motion", value: "inactive", descriptionText: "${device.displayName}: motion has stopped")
-				}
-				break
-			case 3:
-				sendEvent(name: "tamper", value: "active", descriptionText: "${device.displayName}: tamper alarm activated")
-				sendEvent(name: "lastEvent", value: "Tamper - $lastTime", displayed: false)
-				break
-			case 8:
-				sendEvent(name: "motion", value: "active", descriptionText: "${device.displayName}: motion detected")
-				sendEvent(name: "lastEvent", value: "Motion - $lastTime", displayed: false )
-				break
+		if (cmd.event == 0) {
+			sendEvent(name: (cmd.eventParameter[0] == 3) ? "tamper" : "motion", value: "inactive", descriptionText: "${device.displayName}: tamper alarm has been deactivated")
+		} else {
+			sendEvent(name: (cmd.event == 3) ? "tamper" : "motion", value: "active", descriptionText: "${device.displayName}: tamper alarm activated")
+			sendEvent(name: "lastEvent", value: (cmd.event == 3) ? "Tamper - $lastTime" : "Motion - $lastTime", displayed: false)
 		}
 	}
 }
@@ -242,8 +230,8 @@ def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd) {
 		parameterMap().each {
 			if (device.currentValue("syncStatus") == "force") { state."$it.key".state = "notSynced" }
 			if (state."$it.key".value != null && state."$it.key".state == "notSynced") {
-				cmdsSet << zwave.configurationV1.configurationSet(configurationValue: intToParam(state."$it.key".value, it.size), parameterNumber: it.num, size: it.size)
-				cmdsGet << zwave.configurationV1.configurationGet(parameterNumber: it.num)
+				cmdsSet << zwave.configurationV2.configurationSet(configurationValue: intToParam(state."$it.key".value, it.size), parameterNumber: it.num, size: it.size)
+				cmdsGet << zwave.configurationV2.configurationGet(parameterNumber: it.num)
 				cmdCount = cmdCount + 1
 			}
 		}
@@ -266,13 +254,10 @@ def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd) {
 	cmds << encap(zwave.wakeUpV1.wakeUpNoMoreInformation())
 	results = results + response(cmds)
 	
-	//def cmdsTmp = cmdsSet + cmdsGet
-	//hubResponseEncap(cmdsTmp,1000)
-	
 	return results
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.configurationv1.ConfigurationReport cmd) {
+def zwaveEvent(physicalgraph.zwave.commands.configurationv2.ConfigurationReport cmd) {
 	def paramKey = parameterMap().find( {it.num == cmd.parameterNumber } ).key
 	logging("${device.displayName} - Parameter ${paramKey} value is ${cmd.scaledConfigurationValue} expected " + state."$paramKey".value, "info")
 	if (state."$paramKey".value == cmd.scaledConfigurationValue) {
@@ -382,7 +367,7 @@ def parse(String description) {
 			eventType: "ALERT",
 			name: "secureInclusion",
 			value: "failed",
-			displayed: true,
+			displayed: true
 		)
 	} else if (description == "updated") {
 		return null
@@ -402,7 +387,6 @@ def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulat
 		zwaveEvent(encapsulatedCommand)
 	} else {
 		log.warn "Unable to extract secure cmd from $cmd"
-		createEvent(descriptionText: cmd.toString())
 	}
 }
 
@@ -410,11 +394,21 @@ def zwaveEvent(physicalgraph.zwave.commands.crc16encapv1.Crc16Encap cmd) {
 	def version = cmdVersions()[cmd.commandClass as Integer]
 	def ccObj = version ? zwave.commandClass(cmd.commandClass, version) : zwave.commandClass(cmd.commandClass)
 	def encapsulatedCommand = ccObj?.command(cmd.command)?.parse(cmd.data)
-	if (!encapsulatedCommand) {
-		log.warn "Could not extract crc16 command from $cmd"
-	} else {
+	if (encapsulatedCommand) {
 		logging("${device.displayName} - Parsed Crc16Encap into: ${encapsulatedCommand}")
 		zwaveEvent(encapsulatedCommand)
+	} else {
+		log.warn "Could not extract crc16 command from $cmd"
+	}
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCmdEncap cmd) {
+	def encapsulatedCommand = cmd.encapsulatedCommand(cmdVersions())
+	if (encapsulatedCommand) {
+   		logging("${device.displayName} - Parsed MultiChannelCmdEncap ${encapsulatedCommand}")
+		zwaveEvent(encapsulatedCommand, cmd.sourceEndPoint as Integer)
+	} else {
+		log.warn "Could not extract multi channel command from $cmd"
 	}
 }
 
@@ -452,10 +446,6 @@ private encapSequence(cmds, delay=250) {
 	delayBetween(cmds.collect{ encap(it) }, delay)
 }
 
-private hubResponseEncap(cmds, delay=250) {
-	sendHubCommand( cmds.collect{ response(encap(it)) }, delay)
-}
-
 private List intToParam(Long value, Integer size = 1) {
 	def result = []
 	size.times { 
@@ -470,8 +460,9 @@ private List intToParam(Long value, Integer size = 1) {
 ##########################
 */
 private Map cmdVersions() {
-	//[0x5E: 2, 0x59: 1, 0x80: 1, 0x56: 1, 0x7A: 3, 0x73: 1, 0x98: 1, 0x22: 1, 0x85: 2, 0x5B: 1, 0x70: 1, 0x8E: 2, 0x86: 2, 0x84: 2, 0x75: 2, 0x72: 2] //keyfob
-	[0x5E: 1, 0x86: 1, 0x72: 2, 0x59: 1, 0x80: 1, 0x73: 1, 0x56: 1, 0x22: 1, 0x31: 5, 0x98: 1, 0x7A: 3, 0x20: 1, 0x5A: 1, 0x85: 2, 0x84: 2, 0x71: 3, 0x8E: 1, 0x70: 1, 0x30: 1, 0x9C: 1] //motion sensor
+	//[0x5E: 2, 0x59: 1, 0x80: 1, 0x56: 1, 0x7A: 3, 0x73: 1, 0x98: 1, 0x22: 1, 0x85: 2, 0x5B: 1, 0x70: 1, 0x8E: 2, 0x86: 2, 0x84: 2, 0x75: 2, 0x72: 2] //Fibaro KeyFob
+	[0x5E: 1, 0x86: 1, 0x72: 2, 0x59: 1, 0x80: 1, 0x73: 1, 0x56: 1, 0x22: 1, 0x31: 5, 0x98: 1, 0x7A: 3, 0x20: 1, 0x5A: 1, 0x85: 2, 0x84: 2, 0x71: 3, 0x8E: 1, 0x70: 2, 0x30: 1, 0x9C: 1] //Fibaro Motion Sensor ZW5
+	//[0x5E: 1, 0x86: 1, 0x72: 1, 0x59: 1, 0x73: 1, 0x22: 1, 0x56: 1, 0x32: 3, 0x71: 1, 0x98: 1, 0x7A: 1, 0x25: 1, 0x5A: 1, 0x85: 2, 0x70: 2, 0x8E: 1, 0x60: 3, 0x75: 1, 0x5B: 1] //Fibaro Double Switch 2 (FGS-223) & FIBARO Single Switch 2 (FGS-213)
 }
 
 private parameterMap() {[
