@@ -99,11 +99,11 @@ def off() {
 }
 
 def childOn() {	
-	sendHubCommand(new physicalgraph.device.HubAction(encap(zwave.basicV1.basicSet(value: 255),2)))
+	sendHubCommand(response(encap(zwave.basicV1.basicSet(value: 255),2)))
 }
 
 def childOff() {
-	sendHubCommand(new physicalgraph.device.HubAction(encap(zwave.basicV1.basicSet(value: 0),2)))
+	sendHubCommand(response(encap(zwave.basicV1.basicSet(value: 0),2)))
 }
 
 def reset() {
@@ -116,10 +116,10 @@ def reset() {
 
 def childReset() {
 	def cmds = []
-	cmds << new physicalgraph.device.HubAction(encap(zwave.meterV3.meterReset(), 2))
-	cmds << new physicalgraph.device.HubAction(encap(zwave.meterV3.meterGet(scale: 0), 2))
-	cmds << new physicalgraph.device.HubAction(encap(zwave.meterV3.meterGet(scale: 2), 2))
-	sendHubCommand(cmds, 1000)
+	cmds << response(encap(zwave.meterV3.meterReset(), 2))
+	cmds << response(encap(zwave.meterV3.meterGet(scale: 0), 2))
+	cmds << response(encap(zwave.meterV3.meterGet(scale: 2), 2))
+	sendHubCommand(cmds,1000)
 }
 
 def refresh() {
@@ -131,9 +131,9 @@ def refresh() {
 
 def childRefresh() {
 	def cmds = []
-	cmds << new physicalgraph.device.HubAction(encap(zwave.meterV3.meterGet(scale: 0), 2))
-	cmds << new physicalgraph.device.HubAction(encap(zwave.meterV3.meterGet(scale: 2), 2))
-	sendHubCommand(cmds, 1000)
+	cmds << response(encap(zwave.meterV3.meterGet(scale: 0), 2))
+	cmds << response(encap(zwave.meterV3.meterGet(scale: 2), 2))
+	sendHubCommand(cmds,1000)
 }
 
 //Configuration and synchronization
@@ -144,12 +144,9 @@ def updated() {
 	if (!childDevices) {
 		createChildDevices()
 	}
+	if (device.currentValue("numberOfButtons") != 6) { sendEvent(name: "numberOfButtons", value: 6) }
 	
-	sendEvent(name: "numberOfButtons", value: 6)
-	
-//######### Remove ALL associations, add single multi channel one. #########//
-	cmds << zwave.multiChannelAssociationV2.multiChannelAssociationRemove()
-	cmds << zwave.multiChannelAssociationV2.multiChannelAssociationSet(groupingIdentifier: 1, nodeId: [0,1,1])
+	cmds << zwave.multiChannelAssociationV2.multiChannelAssociationGet(groupingIdentifier: 1) //verify if group 1 association is correct
 	
 	def Integer cmdCount = 0
 	parameterMap().each {
@@ -206,7 +203,7 @@ private createChildDevices() {
 	)
 }
 
-private getChild(Integer childNum) {
+private physicalgraph.app.ChildDeviceWrapper getChild(Integer childNum) {
 	return childDevices.find({ it.deviceNetworkId == "${device.deviceNetworkId}-${childNum}" })
 }
 
@@ -224,6 +221,20 @@ def zwaveEvent(physicalgraph.zwave.commands.applicationstatusv1.ApplicationRejec
 	if (device.currentValue("combinedMeter") == "SYNC IN PROGRESS.") { 
 		sendEvent(name: "combinedMeter", value: "SYNC FAILED!", displayed: false)
 	}
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.multichannelassociationv2.MultiChannelAssociationReport cmd) {
+	def cmds = []
+	if (cmd.groupingIdentifier == 1) {
+		if (cmd.nodeId != [0, zwaveHubNodeId, 1]) {
+			log.debug "${device.displayName} - incorrect MultiChannel Association for Group 1! nodeId: ${cmd.nodeId} will be changed to [0, ${zwaveHubNodeId}, 1]"
+			cmds << zwave.multiChannelAssociationV2.multiChannelAssociationRemove(groupingIdentifier: 1)
+			cmds << zwave.multiChannelAssociationV2.multiChannelAssociationSet(groupingIdentifier: 1, nodeId: [0,zwaveHubNodeId,1])
+		} else {
+			logging("${device.displayName} - MultiChannel Association for Group 1 correct.","info")
+		}
+	}  
+	if (cmds) { [response(encapSequence(cmds, 1000))] }
 }
 
 //event handlers
@@ -317,8 +328,7 @@ def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulat
 		logging("${device.displayName} - Parsed SecurityMessageEncapsulation into: ${encapsulatedCommand}")
 		zwaveEvent(encapsulatedCommand)
 	} else {
-		log.warn "Unable to extract secure cmd from $cmd"
-		createEvent(descriptionText: cmd.toString())
+		log.warn "Unable to extract Secure command from $cmd"
 	}
 }
 
@@ -326,11 +336,11 @@ def zwaveEvent(physicalgraph.zwave.commands.crc16encapv1.Crc16Encap cmd) {
 	def version = cmdVersions()[cmd.commandClass as Integer]
 	def ccObj = version ? zwave.commandClass(cmd.commandClass, version) : zwave.commandClass(cmd.commandClass)
 	def encapsulatedCommand = ccObj?.command(cmd.command)?.parse(cmd.data)
-	if (!encapsulatedCommand) {
-		log.warn "Could not extract crc16 command from $cmd"
-	} else {
+	if (encapsulatedCommand) {
 		logging("${device.displayName} - Parsed Crc16Encap into: ${encapsulatedCommand}")
 		zwaveEvent(encapsulatedCommand)
+	} else {
+		log.warn "Unable to extract CRC16 command from $cmd"
 	}
 }
 
@@ -339,9 +349,10 @@ def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCmdEncap 
 	if (encapsulatedCommand) {
 		logging("${device.displayName} - Parsed MultiChannelCmdEncap ${encapsulatedCommand}")
 		zwaveEvent(encapsulatedCommand, cmd.sourceEndPoint as Integer)
+	} else {
+		log.warn "Unable to extract MultiChannel command from $cmd"
 	}
 }
-
 
 private logging(text, type = "debug") {
 	if (settings.logging == "true") {
@@ -355,25 +366,13 @@ private secEncap(physicalgraph.zwave.Command cmd) {
 }
 
 private crcEncap(physicalgraph.zwave.Command cmd) {
-		logging("${device.displayName} - encapsulating command using CRC16 Encapsulation, command: $cmd","info")
-		zwave.crc16EncapV1.crc16Encap().encapsulate(cmd).format() // doesn't work righ now because SmartThings...
-		//"5601${cmd.format()}0000"
+	logging("${device.displayName} - encapsulating command using CRC16 Encapsulation, command: $cmd","info")
+	zwave.crc16EncapV1.crc16Encap().encapsulate(cmd).format() 
 }
 
 private multiEncap(physicalgraph.zwave.Command cmd, Integer ep) {
-	logging("${device.displayName} - encapsulating command using Multi Channel Encapsulation, ep: $ep command: $cmd","info")
+	logging("${device.displayName} - encapsulating command using MultiChannel Encapsulation, ep: $ep command: $cmd","info")
 	zwave.multiChannelV3.multiChannelCmdEncap(destinationEndPoint:ep).encapsulate(cmd)
-}
-
-private encap(physicalgraph.zwave.Command cmd) {
-	if (zwaveInfo.zw.contains("s") && zwaveInfo.sec.contains(Integer.toHexString(cmd.commandClassId).toUpperCase())) { 
-		secEncap(cmd)
-	} else if (zwaveInfo.cc.contains("56")){ 
-		crcEncap(cmd)
-	} else {
-		logging("${device.displayName} - no encapsulation supported for command: $cmd","info")
-		cmd.format()
-	}
 }
 
 private encap(physicalgraph.zwave.Command cmd, Integer ep) {
@@ -386,6 +385,17 @@ private encap(List encapList) {
 
 private encap(Map encapMap) {
 	encap(encapMap.cmd, encapMap.ep)
+}
+
+private encap(physicalgraph.zwave.Command cmd) {
+	if (zwaveInfo.zw.contains("s")) { 
+		secEncap(cmd)
+	} else if (zwaveInfo.cc.contains("56")){ 
+		crcEncap(cmd)
+	} else {
+		logging("${device.displayName} - no encapsulation supported for command: $cmd","info")
+		cmd.format()
+	}
 }
 
 private encapSequence(cmds, Integer delay=250) {
@@ -412,7 +422,7 @@ private List intToParam(Long value, Integer size = 1) {
 private Map cmdVersions() {
 	//[0x5E: 2, 0x59: 1, 0x80: 1, 0x56: 1, 0x7A: 3, 0x73: 1, 0x98: 1, 0x22: 1, 0x85: 2, 0x5B: 1, 0x70: 2, 0x8E: 2, 0x86: 2, 0x84: 2, 0x75: 2, 0x72: 2] //Fibaro KeyFob
 	//[0x5E: 1, 0x86: 1, 0x72: 2, 0x59: 1, 0x80: 1, 0x73: 1, 0x56: 1, 0x22: 1, 0x31: 5, 0x98: 1, 0x7A: 3, 0x20: 1, 0x5A: 1, 0x85: 2, 0x84: 2, 0x71: 3, 0x8E: 1, 0x70: 2, 0x30: 1, 0x9C: 1] //Fibaro Motion Sensor ZW5
-	[0x5E: 1, 0x86: 1, 0x72: 1, 0x59: 1, 0x73: 1, 0x22: 1, 0x56: 1, 0x32: 3, 0x71: 1, 0x98: 1, 0x7A: 1, 0x25: 1, 0x5A: 1, 0x85: 2, 0x70: 2, 0x8E: 1, 0x60: 3, 0x75: 1, 0x5B: 1] //Fibaro Double Switch 2
+	[0x5E: 1, 0x86: 1, 0x72: 1, 0x59: 1, 0x73: 1, 0x22: 1, 0x56: 1, 0x32: 3, 0x71: 1, 0x98: 1, 0x7A: 1, 0x25: 1, 0x5A: 1, 0x85: 2, 0x70: 2, 0x8E: 2, 0x60: 3, 0x75: 1, 0x5B: 1] //Fibaro Double Switch 2
 }
 
 private parameterMap() {[
