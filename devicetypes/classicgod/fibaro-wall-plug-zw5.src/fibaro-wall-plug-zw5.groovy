@@ -332,9 +332,9 @@ private Map cmdVersions() {
 }
 
 private parameterMap() {[
-	[key: "alwaysActive", num: 1, size: 1, type: "enum", options: [0: "0 - inactive", 1: "1 - activated"], def: "0", title: " Always on function", descr: null],
+	[key: "alwaysActive", num: 1, size: 1, type: "enum", options: [0: "0 - inactive", 1: "1 - activated"], def: "0", title: "Always on function", descr: null],
 	[key: "restoreState", num: 2, size: 1, type: "enum", options: [0: "0 - power off after power failure", 1: "1 - restore state"], def: "1", title: "Restore state after power failure", descr: null],
-	[key: "overloadSafety", num: 3, size: 2, type: "number", def: 0, min: 0, max: 30000 , title: "Oveload safety switch", descr: null],
+	[key: "overloadSafety", num: 3, size: 2, type: "number", def: 0, min: 0, max: 30000 , title: "Overload safety switch", descr: null],
 	[key: "immediatePowerReports", num: 10, size: 1, type: "number", def: 80, min: 1, max: 100, title: "Immediate power reports", descr: null],
 	[key: "standardPowerReports", num: 11, size: 1, type: "number", def: 15, min: 1, max: 100, title: "Standard power reports", descr: null], 
 	[key: "powerReportFrequency", num: 12, size: 2, type: "number", def: 30, min: 5, max: 600, title: "Power reporting interval", descr: null],
