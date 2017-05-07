@@ -42,7 +42,6 @@ metadata {
 
 	tiles (scale: 2){
 		def detailList = []
-
 		standardTile("menuButton", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2, canChangeIcon: true) {
 			state "default", label:"PUSH",  action:"menuButton", backgroundColor: "#00A0DC", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/main_icon.png"
 			state "pushed", label:"PUSH",  action:"menuButton", backgroundColor: "#FFFFFF", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/main_icon.png"
@@ -84,12 +83,12 @@ metadata {
 			state "val", label:'${currentValue}'
 		}
 		standardTile("syncStatus", "device.syncStatus", decoration: "flat", width: 2, height: 2) {
-			state "synced", label:'OK', action:"forceSync", backgroundColor: "#44b621", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/sync_icon.png"
-			state "pending", label:"Pending", action:"forceSync", backgroundColor: "#00A0DC", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/sync_icon.png"
-			state "inProgress", label:"Syncing", action:"forceSync", backgroundColor: "#551A8B", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/sync_icon.png"
-			state "incomplete", label:"Incomplete", action:"forceSync", backgroundColor: "#C6C600", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/sync_icon.png"
-			state "failed", label:"Failed", action:"forceSync", backgroundColor: "#FF0000", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/sync_icon.png"
-			state "force", label:"Force", action:"forceSync", backgroundColor: "#FFA500", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/sync_icon.png"
+			state "synced", label:'OK', action:"forceSync", backgroundColor: "#00a0dc", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-motion-sensor-zw5.src/images/sync_icon.png"
+			state "pending", label:"Pending", action:"forceSync", backgroundColor: "#153591", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-motion-sensor-zw5.src/images/sync_icon.png"
+			state "inProgress", label:"Syncing", action:"forceSync", backgroundColor: "#44b621", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-motion-sensor-zw5.src/images/sync_icon.png"
+			state "incomplete", label:"Incomplete", action:"forceSync", backgroundColor: "#f1d801", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-motion-sensor-zw5.src/images/sync_icon.png"
+			state "failed", label:"Failed", action:"forceSync", backgroundColor: "#bc2323", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-motion-sensor-zw5.src/images/sync_icon.png"
+			state "force", label:"Force", action:"forceSync", backgroundColor: "#e86d13", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-motion-sensor-zw5.src/images/sync_icon.png"
 		}
 		valueTile("battery", "device.battery", inactiveLabel: false, decoration: "flat", width: 2, height: 2, canChangeIcon: true) {
 			state "val", label:'Battery: ${currentValue}%', icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-keyfob.src/main_icon.png"
@@ -159,6 +158,7 @@ metadata {
 			)
 		}
 		input name: "menuButton", type: "number", title: "Button number to be activated from main menu:", required: false
+		input name: "logging", title: "Logging", type: "boolean", required: false 
 	}
 }
 
@@ -175,40 +175,6 @@ def initialize() {
 	state.protection = [value: null, state: "synced"]
 }
 
-def parse(String description) {
-	def results = []
-	if (description.startsWith("Err")) {
-		results = createEvent(descriptionText:description, displayed:true)
-	} else {
-		def cmd = zwave.parse(description, [0x5E: 2, 0x59: 1, 0x80: 1, 0x56: 1, 0x7A: 3, 0x73: 1, 0x98: 1, 0x22: 1, 0x85: 2, 0x5B: 1, 0x70: 1, 0x8E: 2, 0x86: 2, 0x84: 2, 0x75: 2])
-		if(cmd) results += zwaveEvent(cmd)
-		if(!results) results = [ descriptionText: cmd, displayed: false ]
-	}
-	return results
-}
-
-def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulation cmd) {
-	def encapsulatedCommand = cmd.encapsulatedCommand([0x5E: 2, 0x59: 1, 0x80: 1, 0x56: 1, 0x7A: 3, 0x73: 1, 0x98: 1, 0x22: 1, 0x85: 2, 0x5B: 1, 0x70: 1, 0x8E: 2, 0x86: 2, 0x84: 2, 0x75: 2, 0x72: 2]) 
-	if (encapsulatedCommand) {
-		return zwaveEvent(encapsulatedCommand)
-	} else {
-		log.warn "Unable to extract encapsulated cmd from $cmd"
-		createEvent(descriptionText: cmd.toString())
-	}
-}
-
-def zwaveEvent(physicalgraph.zwave.commands.crc16encapv1.Crc16Encap cmd) {
-	def versions = [0x31: 3, 0x30: 2, 0x84: 2, 0x9C: 1, 0x70: 2]
-	def version = versions[cmd.commandClass as Integer]
-	def ccObj = version ? zwave.commandClass(cmd.commandClass, version) : zwave.commandClass(cmd.commandClass)
-	def encapsulatedCommand = ccObj?.command(cmd.command)?.parse(cmd.data)
-	if (!encapsulatedCommand) {
-		log.debug "Could not extract command from $cmd"
-	} else {
-		zwaveEvent(encapsulatedCommand)
-	}
-}
-
 def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd) {
 	log.info "$device.displayName woke up"
 	def cmdsSet = []
@@ -221,14 +187,14 @@ def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd) {
 		parameterMap().each {
 			if (device.currentValue("syncStatus") == "force") { state."$it.key".state = "notSynced" }
 			if (state."$it.key".value != null && state."$it.key".state == "notSynced") {
-				cmdsSet << zwave.configurationV1.configurationSet(configurationValue: paramValue(state."$it.key".value, it.size), parameterNumber: it.num , size: it.size)
-				cmdsGet << zwave.configurationV1.configurationGet(parameterNumber: it.num)
+				cmdsSet << zwave.configurationV2.configurationSet(configurationValue: intToParam(state."$it.key".value, it.size), parameterNumber: it.num , size: it.size)
+				cmdsGet << zwave.configurationV2.configurationGet(parameterNumber: it.num)
 				cmdCount = cmdCount + 1
 			}
 		}
 		if (device.currentValue("syncStatus") == "force")  { state.protection.state = "notSynced" }
 		if ( state.protection.value != null && state.protection.state == "notSynced") {
-			cmdsSet << zwave.protectionV2.protectionSet(localProtectionState: state.protection.value  )
+			cmdsSet << zwave.protectionV2.protectionSet(localProtectionState: state.protection.value )
 			cmdsGet << zwave.protectionV2.protectionGet()
 			cmdCount = cmdCount + 1
 		}
@@ -236,17 +202,19 @@ def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd) {
 		runIn((5+cmdCount*1.5), syncCheck)
 	}
 	if (cmdsSet) { 
-		cmds = delayBetween(cmdsSet.collect{zwave.securityV1.securityMessageEncapsulation().encapsulate(it).format()},500)
+		cmds = encapSequence(cmdsSet,500)
 		cmds << "delay 500" 
 	}
-	cmds = cmds + delayBetween(cmdsGet.collect{zwave.securityV1.securityMessageEncapsulation().encapsulate(it).format()},1000)
+	cmds = cmds + encapSequence(cmdsGet,1000)
 	cmds << "delay "+(5000+cmdCount*1500)
-	cmds << zwave.securityV1.securityMessageEncapsulation().encapsulate(zwave.wakeUpV1.wakeUpNoMoreInformation()).format()
+	cmds << encap(zwave.wakeUpV1.wakeUpNoMoreInformation())
 	results = results + response(cmds)
+	
+	//sendHubCommand(response(cmds))
 	return results
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.configurationv1.ConfigurationReport cmd) {
+def zwaveEvent(physicalgraph.zwave.commands.configurationv2.ConfigurationReport cmd) {
 	def paramKey
 	paramKey = parameterMap().find( {it.num == cmd.parameterNumber } ).key
 	if (state."$paramKey".value == cmd.scaledConfigurationValue) {
@@ -312,6 +280,7 @@ def zwaveEvent(physicalgraph.zwave.commands.centralscenev1.CentralSceneNotificat
 
 def updated() {
 	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
+	sendEvent(name: "numberOfButtons", value: 30)
 	def Integer tempValue 
 	def Integer syncRequired = 0
 	parameterMap().each {
@@ -342,7 +311,6 @@ def updated() {
 	if ( syncRequired !=0 ) { sendEvent(name: "syncStatus", value: "pending") }
 	state.lastUpdated = now()
 }
-
 
 def on1() { buttonEvent(19,"on") }
 def on2() { buttonEvent(20,"on") }
@@ -479,17 +447,116 @@ def btnTimToValue () {
 		return buttonVal+timeVal
 }
 
-def paramValue(value, size) {
-	def Integer tempValue
-	def short valPart1
-	def short valPart2
-	if (size == 1) {
-		return [value]
+/*
+####################
+## Z-Wave Toolkit ##
+####################
+*/
+def parse(String description) {	  
+	def result = []
+	logging("${device.displayName} - Parsing: ${description}")
+	if (description.startsWith("Err 106")) {
+		result = createEvent(
+			descriptionText: "Failed to complete the network security key exchange. If you are unable to receive data from it, you must remove it from your network and add it again.",
+			eventType: "ALERT",
+			name: "secureInclusion",
+			value: "failed",
+			displayed: true
+		)
+	} else if (description == "updated") {
+		return null
 	} else {
-		valPart1 = value & 0xFF
-		valPart2 = (value >> 8) & 0xFF
-		return [valPart2, valPart1]
+		def cmd = zwave.parse(description, cmdVersions()) 
+		if (cmd) {
+			logging("${device.displayName} - Parsed: ${cmd}")
+			zwaveEvent(cmd)
+		}
 	}
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulation cmd) {
+	def encapsulatedCommand = cmd.encapsulatedCommand(cmdVersions()) 
+	if (encapsulatedCommand) {
+		logging("${device.displayName} - Parsed SecurityMessageEncapsulation into: ${encapsulatedCommand}")
+		zwaveEvent(encapsulatedCommand)
+	} else {
+		log.warn "Unable to extract secure cmd from $cmd"
+	}
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.crc16encapv1.Crc16Encap cmd) {
+	def version = cmdVersions()[cmd.commandClass as Integer]
+	def ccObj = version ? zwave.commandClass(cmd.commandClass, version) : zwave.commandClass(cmd.commandClass)
+	def encapsulatedCommand = ccObj?.command(cmd.command)?.parse(cmd.data)
+	if (encapsulatedCommand) {
+		logging("${device.displayName} - Parsed Crc16Encap into: ${encapsulatedCommand}")
+		zwaveEvent(encapsulatedCommand)
+	} else {
+		log.warn "Could not extract crc16 command from $cmd"
+	}
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCmdEncap cmd) {
+	def encapsulatedCommand = cmd.encapsulatedCommand(cmdVersions())
+	if (encapsulatedCommand) {
+   		logging("${device.displayName} - Parsed MultiChannelCmdEncap ${encapsulatedCommand}")
+		zwaveEvent(encapsulatedCommand, cmd.sourceEndPoint as Integer)
+	} else {
+		log.warn "Could not extract multi channel command from $cmd"
+	}
+}
+
+private logging(text, type = "debug") {
+	if (settings.logging == "true") {
+		log."$type" text
+	}
+}
+
+private secEncap(physicalgraph.zwave.Command cmd) {
+	logging("${device.displayName} - encapsulating command using Secure Encapsulation, command: $cmd","info")
+	zwave.securityV1.securityMessageEncapsulation().encapsulate(cmd).format()
+}
+
+private crcEncap(physicalgraph.zwave.Command cmd) {
+		logging("${device.displayName} - encapsulating command using CRC16 Encapsulation, command: $cmd","info")
+		zwave.crc16EncapV1.crc16Encap().encapsulate(cmd).format() // doesn't work righ now because SmartThings...
+		//"5601${cmd.format()}0000"
+}
+
+private encap(physicalgraph.zwave.Command cmd) {
+	if (zwaveInfo.zw.contains("s") && zwaveInfo.sec.contains(Integer.toHexString(cmd.commandClassId).toUpperCase())) { 
+		// if device is included securly and the command is on list of commands dupported with secure encapsulation
+		secEncap(cmd)
+	} else if (zwaveInfo.cc.contains("56")){ 
+		// if device supports crc16
+		crcEncap(cmd)
+	} else { // if all else fails send plain command 
+		logging("${device.displayName} - no encapsulation supported for command: $cmd","info")
+		cmd.format()
+	}
+}
+
+private encapSequence(cmds, delay=250) {
+	delayBetween(cmds.collect{ encap(it) }, delay)
+}
+
+private List intToParam(Long value, Integer size = 1) {
+	def result = []
+	size.times { 
+		result = result.plus(0, (value & 0xFF) as Short)
+		value = (value >> 8)
+	}
+	return result
+}
+/*
+##########################
+## Device Configuration ##
+##########################
+*/
+private Map cmdVersions() {
+	[0x5E: 2, 0x59: 1, 0x80: 1, 0x56: 1, 0x7A: 3, 0x73: 1, 0x98: 1, 0x22: 1, 0x85: 2, 0x5B: 1, 0x70: 2, 0x8E: 2, 0x86: 2, 0x84: 2, 0x75: 2, 0x72: 2] //Fibaro KeyFob
+	//[0x5E: 1, 0x86: 1, 0x72: 2, 0x59: 1, 0x80: 1, 0x73: 1, 0x56: 1, 0x22: 1, 0x31: 5, 0x98: 1, 0x7A: 3, 0x20: 1, 0x5A: 1, 0x85: 2, 0x84: 2, 0x71: 3, 0x8E: 1, 0x70: 2, 0x30: 1, 0x9C: 1] //Fibaro Motion Sensor ZW5
+	//[0x5E: 1, 0x86: 1, 0x72: 1, 0x59: 1, 0x73: 1, 0x22: 1, 0x56: 1, 0x32: 3, 0x71: 1, 0x98: 1, 0x7A: 1, 0x25: 1, 0x5A: 1, 0x85: 2, 0x70: 2, 0x8E: 1, 0x60: 3, 0x75: 1, 0x5B: 1] //Fibaro Double Switch 2 (FGS-223) & FIBARO Single Switch 2 (FGS-213)
 }
 
 def parameterMap() { return [ 
