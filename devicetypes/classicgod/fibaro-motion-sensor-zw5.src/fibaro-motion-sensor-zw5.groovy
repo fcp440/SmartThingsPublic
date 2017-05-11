@@ -137,9 +137,9 @@ def zwaveEvent(physicalgraph.zwave.commands.notificationv3.NotificationReport cm
 	def lastTime = new Date().format("yyyy MMM dd EEE HH:mm:ss", location.timeZone)
 	if (cmd.notificationType == 7) {
 		if (cmd.event == 0) {
-			sendEvent(name: (cmd.eventParameter[0] == 3) ? "tamper" : "motion", value: "inactive", descriptionText: "${device.displayName}: tamper alarm has been deactivated")
+			sendEvent(name: (cmd.eventParameter[0] == 3) ? "tamper" : "motion", value: "inactive")
 		} else {
-			sendEvent(name: (cmd.event == 3) ? "tamper" : "motion", value: "active", descriptionText: "${device.displayName}: tamper alarm activated")
+			sendEvent(name: (cmd.event == 3) ? "tamper" : "motion", value: "active")
 			sendEvent(name: "lastEvent", value: (cmd.event == 3) ? "Tamper - $lastTime" : "Motion - $lastTime", displayed: false)
 		}
 	}
