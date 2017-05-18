@@ -30,7 +30,7 @@ metadata {
 	}
 
 	tiles (scale: 2) {
-		multiAttributeTile(name:"FGDWS", type:"lighting", width:6, height:4) {
+		multiAttributeTile(name:"FGDW", type:"lighting", width:6, height:4) {
 			tileAttribute("device.contact", key:"PRIMARY_CONTROL") {
 				attributeState("open", label:"open", icon:"st.contact.contact.open", backgroundColor:"#00a0dc")   
 				attributeState("closed", label:"closed", icon:"st.contact.contact.closed", backgroundColor:"#ffffff")
@@ -77,8 +77,8 @@ metadata {
 			state "force", label:"Force", action:"forceSync", backgroundColor: "#e86d13", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-door-window-sensor-2.src/images/sync_icon.png"
 		}
 		
-		main "FGDWS"
-		details(["FGDWS","tamper","temperature","battery","temperatureAlarm","syncStatus"])
+		main "FGDW"
+		details(["FGDW","tamper","temperature","battery","temperatureAlarm","syncStatus"])
 	}
 		
 	preferences {
