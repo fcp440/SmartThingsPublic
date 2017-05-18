@@ -284,7 +284,7 @@ def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelR
 	logging("${device.displayName} - SensorMultilevelReport received, sensorType: ${cmd.sensorType}, scaledSensorValue: ${cmd.scaledSensorValue}", "info")
 	switch (cmd.sensorType)  {
 		case 1: sendEvent(name: "temperature", value: cmd.scaledSensorValue); break;
-		default: log.debug "Unknown sensor: $cmd";
+		default: logging("${device.displayName} - Unknown sensorType: ${cmd.sensorType}","warn");
 	}
 }
 
