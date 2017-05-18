@@ -22,6 +22,7 @@ metadata {
 		capability "Health Check"
 	
 		attribute "temperatureAlarm", "string"
+		command "forceSync"
 	
 		fingerprint mfr: "010F", prod: "0702",  model: "1000"
 		fingerprint deviceId: "0x0701", inClusters:"0x5E,0x59,0x22,0x80,0x56,0x7A,0x73,0x98,0x31,0x85,0x70,0x5A,0x72,0x8E,0x71,0x86,0x84"
@@ -128,6 +129,20 @@ metadata {
 		}
 		
 		input ( name: "logging", title: "Logging", type: "boolean", required: false )
+	}
+}
+
+def forceSync() {
+	logging("${device.displayName} - Executing forceSync()", "info")
+	if (device.currentValue("syncStatus") != "force") {
+		state.prevSyncState = device.currentValue("syncStatus")
+		sendEvent(name: "syncStatus", value: "force")
+	} else {
+		if (state.prevSyncState != null) {
+			sendEvent(name: "syncStatus", value: state.prevSyncState)
+		} else {
+			sendEvent(name: "syncStatus", value: "synced")
+		}
 	}
 }
 
