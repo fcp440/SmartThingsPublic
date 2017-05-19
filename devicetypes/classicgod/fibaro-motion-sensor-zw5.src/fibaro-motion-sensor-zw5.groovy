@@ -137,9 +137,9 @@ def zwaveEvent(physicalgraph.zwave.commands.notificationv3.NotificationReport cm
 	def lastTime = new Date().format("yyyy MMM dd EEE HH:mm:ss", location.timeZone)
 	if (cmd.notificationType == 7) {
 		if (cmd.event == 0) {
-			sendEvent(name: (cmd.eventParameter[0] == 3) ? "tamper" : "motion", value: "inactive")
+			sendEvent(name: (cmd.eventParameter[0] == 3) ? "tamper" : "motion", value: (cmd.eventParameter[0] == 3) ? "clear" :"inactive")
 		} else {
-			sendEvent(name: (cmd.event == 3) ? "tamper" : "motion", value: "active")
+			sendEvent(name: (cmd.event == 3) ? "tamper" : "motion", value: (cmd.event == 3) ? "detected" : "active")
 			sendEvent(name: "lastEvent", value: (cmd.event == 3) ? "Tamper - $lastTime" : "Motion - $lastTime", displayed: false)
 		}
 	}
