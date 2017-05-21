@@ -233,7 +233,7 @@ def buttonEvent(Integer number) {
 		"Double UP gesture", 
 		"Double DOWN gesture", 
 		"Double LEFT gesture", 
-		"Double RIGH gestureT", 
+		"Double RIGH gesture", 
 		"Sequence 1", 
 		"Sequence 2", 
 		"Sequence 3", 
