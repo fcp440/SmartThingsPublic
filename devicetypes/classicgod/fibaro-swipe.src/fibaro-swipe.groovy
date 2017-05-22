@@ -312,8 +312,8 @@ def Integer calcParam12() {
 	Integer result = 0
 	result += ((settings.flickUp2 == "true")? 0:1)
 	result += ((settings.flickDown2 == "true")? 0:2)
-	result += ((settings.flickLeft2 == "true")? 0:3)
-	result += ((settings.flickRight2 == "true")? 0:4)
+	result += ((settings.flickLeft2 == "true")? 0:4)
+	result += ((settings.flickRight2 == "true")? 0:8)
 	return result
 }
 
