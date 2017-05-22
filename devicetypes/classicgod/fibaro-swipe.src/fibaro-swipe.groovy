@@ -41,9 +41,6 @@ metadata {
 		fingerprint deviceId: "0x1801", inClusters:"0x5E,0x59,0x80,0x56,0x7A,0x72,0x73,0x86,0x85,0x5B,0x70,0x5A,0x8E,0x84"
 	}
 	
-
-	
-	def detailList = []
 	tiles (scale: 2) {
 		standardTile("mainButton", "device.button", inactiveLabel: false, width: 2, height: 2, decoration: "flat", canChangeIcon: true) {
 			state "default", label:"SWIPE", action: "mainButton", backgroundColor: "#00A0DC", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/swipe.png"
@@ -81,7 +78,6 @@ metadata {
 	}
 		
 	preferences {
-	
 		input (
 			title: "Fibaro Swipe manual",
 			description: "Tap to view the manual.",
