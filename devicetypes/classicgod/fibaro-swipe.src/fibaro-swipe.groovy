@@ -13,6 +13,8 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+def buttons = ["up","down","clockwise","left","right","counterClockwise","up2","down2","left2","right2","sequence1","sequence2","sequence3","sequence4","sequence5","sequence6","program1","program2","program3","program4","program5","program6"]
+
 metadata {
 	definition (name: "Fibaro Swipe", namespace: "ClassicGOD", author: "Artur Draga") {
 		capability "Actuator"
@@ -25,57 +27,39 @@ metadata {
 		attribute "switch2", "string"
 		
 		command "gestureMain"
-		(1..10).each { n ->
-			if (n in [5,6]) {
-				command "gesture${n}start"
-				command "gesture${n}stop"
+		buttons.each { button ->
+			if ( button in ["clockwise","counterClockwise"] ) {
+				command "${button}Start"
+				command "${button}Stop"
 			} else {
-				command "gesture$n"  
-			}
-			if (n in (1..6)) {
-				command "sequence$n"
-				command "program$n"
+				command button
 			}
 		}
-	
+
 		fingerprint mfr: "010F", prod: "0D01"
 		fingerprint deviceId: "0x1801", inClusters:"0x5E,0x59,0x80,0x56,0x7A,0x72,0x73,0x98,0x86,0x85,0x5B,0x70,0x5A,0x8E,0x84"
 		fingerprint deviceId: "0x1801", inClusters:"0x5E,0x59,0x80,0x56,0x7A,0x72,0x73,0x86,0x85,0x5B,0x70,0x5A,0x8E,0x84"
 	}
 	
-	standardTile("gestureMain", "device.button", inactiveLabel: false, width: 2, height: 2, decoration: "flat", canChangeIcon: true) {
-		state "default", label:"SWIPE", action: "gestureMain", backgroundColor: "#00A0DC", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/swipe.png"
-		state "pushed", label:"SWIPE", action: "gestureMain", backgroundColor: "#FFFFFF", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/swipe.png"
-	}  
+
 	
-	def gestures = ["up","down","left","right","clockwise","counterClockwise","up2","down2","left2","right2"]
 	def detailList = []
 	tiles (scale: 2) {
-		[1,2,5,3,4,6,7,8,9,10].each { n ->
-			detailList << gestures[n-1]
-			if (n in [5,6]) {
-				standardTile(gestures[n-1], "device.switch${n-4}", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
-					state "off", label:"", action: "gesture${n}start", backgroundColor: "#FFFFFF", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/${gestures[n-1]}.png"
-					state "on", label:"", action: "gesture${n}stop", backgroundColor: "#00A0DC", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/${gestures[n-1]}I.png"
-				}	  
+		standardTile("mainButton", "device.button", inactiveLabel: false, width: 2, height: 2, decoration: "flat", canChangeIcon: true) {
+			state "default", label:"SWIPE", action: "mainButton", backgroundColor: "#00A0DC", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/swipe.png"
+			state "pushed", label:"SWIPE", action: "mainButton", backgroundColor: "#FFFFFF", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/swipe.png"
+		}
+	
+		buttons.each { button ->
+			if (button in ["clockwise","counterClockwise"]) {
+				standardTile(button, "device.switch" + ((button == "clockwise") ? 1:2), inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
+					state "off", label:"", action: "${button}Start", backgroundColor: "#FFFFFF", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/${button}.png"
+					state "on", label:"", action: "${button}Stop", backgroundColor: "#00A0DC", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/${button}I.png"
+				}	
 			} else {
-				standardTile(gestures[n-1], "device.button", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
-					state "button", label:"", action: "gesture$n", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/${gestures[n-1]}.png"
-				}  
-			}
-		}
-		
-		(1..6).each { n ->
-			detailList << "sequence$n"
-			standardTile("sequence$n", "device.button", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
-				state "button", label:"", action: "sequence$n", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/sequence${n}.png"
-			}	 
-		}
-		
-		(1..6).each { n ->
-			detailList << "program$n"
-			standardTile("program$n", "device.button", inactiveLabel: false, width: 2, height: 1, decoration: "flat") {
-				state "button", label:"", action: "program$n", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/program${n}.png"
+				standardTile(button, "device.button", inactiveLabel: false, width: 2, height: (button.contains("program")) ? 1:2, decoration: "flat") {
+					state "button", label:"", action: button, icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/${button}.png"
+				}
 			}
 		}
 		
@@ -91,10 +75,9 @@ metadata {
 			state "failed", label:"Failed", action:"forceSync", backgroundColor: "#bc2323", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/sync_icon.png"
 			state "force", label:"Force", action:"forceSync", backgroundColor: "#e86d13", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-swipe.src/images/sync_icon.png"
 		}
-		
-		detailList = detailList.plus(8, "syncStatus" ).plus(11, "battery" )
-		main "gestureMain" 
-		details(detailList)
+
+		main "mainButton" 
+		details(buttons.plus(8,"syncStatus").plus(11,"battery"))
 	}
 		
 	preferences {
@@ -154,23 +137,15 @@ metadata {
 		)
 		
 		parameterMap().findAll( {it.key.contains('sequence')} ).each {
-			input (
-				name: it.key,
-				title: "${it.num}. ${it.title}",
-				//description: null,
-				type: it.type,
-				options: it.options,
-				range: (it.min != null && it.max != null) ? "${it.min}..${it.max}" : null,
-				defaultValue: it.def,
-				required: false
-			)
+			input (name: it.key, title: "${it.num}. ${it.title}", type: it.type, range: "${it.min}..${it.max}", defaultValue: 0, required: false)
 		}
 
-		input ( name: "mainButton", type: "number", title: "Button number to be activated from main menu:", required: false, defaultValue: 1)
+		input ( name: "mainButton", type: "number", title: "Button to be activated from main menu:", required: false, defaultValue: 1)
 		input ( name: "logging", title: "Logging", type: "boolean", required: false )
 	}
 }
 
+//UI Support functions
 def getPrefsFor(parameter) {
 	input (
 		title: "${parameter.num}. ${parameter.title}",
@@ -178,11 +153,9 @@ def getPrefsFor(parameter) {
 		type: "paragraph",
 		element: "paragraph"
 	)
-			
 	input (
 		name: parameter.key,
 		title: null,
-		//description: null,
 		type: parameter.type,
 		options: parameter.options,
 		range: (parameter.min != null && parameter.max != null) ? "${parameter.min}..${parameter.max}" : null,
@@ -191,25 +164,25 @@ def getPrefsFor(parameter) {
 	)
 }
 
-def gestureMain() { 
+def mainButton() { 
 	if (!settings.mainButton) {
 		buttonEvent(1)
 	} else {
 		buttonEvent(settings.mainButton)
 	}
 }
-def gesture1() { buttonEvent(1) }
-def gesture2() { buttonEvent(2) }
-def gesture3() { buttonEvent(3) }
-def gesture4() { buttonEvent(4) }
-def gesture5start() { buttonEvent(5); switchEvent(1,"on"); }
-def gesture5stop() { switchEvent(1,"off") }
-def gesture6start() { buttonEvent(6); switchEvent(2,"on"); }
-def gesture6stop() { switchEvent(2,"off") }
-def gesture7() { buttonEvent(7) }
-def gesture8() { buttonEvent(8) }
-def gesture9() { buttonEvent(9) }
-def gesture10() { buttonEvent(10) }
+def up() { buttonEvent(1) }
+def down() { buttonEvent(2) }
+def left() { buttonEvent(3) }
+def right() { buttonEvent(4) }
+def clockwiseStart() { buttonEvent(5); switchEvent(1,"on"); }
+def clockwiseStop() { switchEvent(1,"off") }
+def counterClockwiseStart() { buttonEvent(6); switchEvent(2,"on"); }
+def counterClockwiseStop() { switchEvent(2,"off") }
+def up2() { buttonEvent(7) }
+def down2() { buttonEvent(8) }
+def left2() { buttonEvent(9) }
+def right2() { buttonEvent(10) }
 def sequence1() { buttonEvent(11) }
 def sequence2() { buttonEvent(12) }
 def sequence3() { buttonEvent(13) }
@@ -224,7 +197,7 @@ def program5() { programSequence(5) }
 def program6() { programSequence(6) }
 
 def buttonEvent(Integer number) {
-	def gestureList = [
+	def descriptionList = [
 		"UP gesture",
 		"DOWN gesture",
 		"LEFT gesture",
@@ -242,7 +215,7 @@ def buttonEvent(Integer number) {
 		"Sequence 5", 
 		"Sequence 6" ]
 	logging("${device.displayName} - Sending buttonEvent $number","info")
-	sendEvent(name: "button", value: "pushed", data: [buttonNumber: number], descriptionText: "${gestureList[number-1]} detected", isStateChange: true)
+	sendEvent(name: "button", value: "pushed", data: [buttonNumber: number], descriptionText: "${descriptionList[number-1]} detected", isStateChange: true)
 }
 
 def switchEvent(Integer number, String value) {
@@ -262,7 +235,7 @@ def programSequence(Integer seqNum) {
 }
 
 def updated() {
-	logging("${device.displayName} - Executing updated()","info")   
+	logging("${device.displayName} - Executing updated()","info")
 	sendEvent(name: "numberOfButtons", value: 16)
 	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
 	def syncRequired = 0
@@ -271,7 +244,7 @@ def updated() {
 		if(settings."$it.key" != null || it.key in ["param10","param12"] ) {
 			if (it.key == "param10") { value = calcParam10() }
 			else if (it.key == "param12") { value = calcParam12() } 
-			else if (it.key.contains("sequence")) { value = calcSequence(settings."$it.key") }  
+			else if (it.key.contains("sequence")) { value = calcSequence(settings."$it.key") }
 			else (value = settings."$it.key")
 			
 			if (state."$it.key" == null) { state."$it.key" = [value: null, state: "synced"] }
@@ -393,14 +366,14 @@ def zwaveEvent(physicalgraph.zwave.commands.applicationstatusv1.ApplicationRejec
 	if (device.currentValue("syncStatus") == "inProgress") { sendEvent(name: "syncStatus", value:"failed") }
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpIntervalReport  cmd) { 
+def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpIntervalReport cmd) { 
 	log.debug "interval! " + cmd
 }
 
 def syncCheck() {
 	logging("${device.displayName} - Executing syncCheck()","info")
 	def Integer count = 0
-	state.wakeUpInterval?.state  = "synced"
+	state.wakeUpInterval?.state = "synced"
 	if (device.currentValue("syncStatus") != "synced") {
 		parameterMap().each {
 			if (state."$it.key"?.state == "notSynced" ) {
@@ -421,12 +394,11 @@ def syncCheck() {
 }
 
 //event handlers
-
 def zwaveEvent(physicalgraph.zwave.commands.centralscenev1.CentralSceneNotification cmd) {
 	if ((cmd.sceneNumber as Integer) in (1..4)) {
 		buttonEvent((cmd.sceneNumber as Integer) + ((cmd.keyAttributes == 0)? 0:6))
 	} else if ((cmd.sceneNumber as Integer) in (5..6)) {
-		switchEvent((cmd.sceneNumber as Integer)-4,  (cmd.keyAttributes == 2)? "on":"off")
+		switchEvent((cmd.sceneNumber as Integer)-4, (cmd.keyAttributes == 2)? "on":"off")
 		if (cmd.keyAttributes == 2) { buttonEvent((cmd.sceneNumber as Integer) ) }
 	} else {
 		buttonEvent((cmd.sceneNumber as Integer) + 4)
@@ -438,15 +410,12 @@ def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
 	sendEvent(name: "battery", value: cmd.batteryLevel)
 }
 
-
-//other
-
 /*
 ####################
 ## Z-Wave Toolkit ##
 ####################
 */
-def parse(String description) {	  
+def parse(String description) {
 	def result = []
 	logging("${device.displayName} - Parsing: ${description}")
 	if (description.startsWith("Err 106")) {
@@ -606,7 +575,7 @@ private parameterMap() {[
 		def: "0", title: "Hold gesture to enter the menu", 
 		descr: "This parameter allows to choose if the menu can be entered using the Hold gesture."],
 	[key: "param10", num: 10, size: 1, type: "number", def: 15, min: 0, max: 63, title: null, descr: null], 
-	[key: "param12", num: 12, size: 1, type: "number", def: 15, min: 0, max: 63, title: null, descr: null],  
+	[key: "param12", num: 12, size: 1, type: "number", def: 15, min: 0, max: 63, title: null, descr: null],
 	[key: "param30", num: 30, size: 1, type: "number", def: 15, min: 0, max: 63, title: null, descr: null], 
 	[key: "sequence1", num: 31, size: 2, type: "number", def: 0, min: 0, max: 444, title: "1st sequence of gestures", descr: null],
 	[key: "sequence2", num: 32, size: 2, type: "number", def: 0, min: 0, max: 444, title: "2nd sequence of gestures", descr: null],
