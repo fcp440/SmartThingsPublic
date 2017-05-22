@@ -110,7 +110,7 @@ metadata {
 		
 		input (
 			title: "Wake up interval",
-			description: "Door/Window Sensor will wake up after each defined time interval and always try to connect with the main controller.\n0 or 3600-64800 (in seconds (1-18h), 3600s (1h) step)",
+			description: "Fibaro Swipe will wake up after each defined time interval and always try to connect with the main controller.\n0 or 3600-64800 (in seconds (1-18h), 3600s (1h) step)",
 			type: "paragraph",
 			element: "paragraph"
 		)
