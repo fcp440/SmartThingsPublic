@@ -231,9 +231,9 @@ def programSequence(Integer seqNum) {
 }
 
 def updated() {
+	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
 	logging("${device.displayName} - Executing updated()","info")
 	sendEvent(name: "numberOfButtons", value: 16)
-	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
 	def syncRequired = 0
 	def value
 	parameterMap().each {
