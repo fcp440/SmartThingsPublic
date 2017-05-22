@@ -121,7 +121,8 @@ metadata {
 			type: "number", 
 			range: "0..64800", 
 			defaultValue: 21600, 
-			required: false )
+			required: false 
+		)
 		
 		parameterMap().findAll( {!it.key.contains('param') && !it.key.contains('sequence')} ).each {
 			getPrefsFor(it)
