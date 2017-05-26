@@ -21,7 +21,6 @@ metadata {
 		capability "Voltage Measurement"
 		capability "Configuration"
 		capability "Refresh"
-		capability "Polling"
 		capability "Health Check"
 
 		command "reset"
@@ -150,10 +149,6 @@ def reset() {
 		state.lastReset = now()
 	}
 	if (cmds) { return encapSequence(cmds,1000) }
-}
-
-def poll() {
-	//refresh()
 }
 
 def childRefresh(dni) {
