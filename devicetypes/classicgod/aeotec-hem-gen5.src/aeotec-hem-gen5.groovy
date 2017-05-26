@@ -223,8 +223,8 @@ def updated() {
 			if (state."$it.key".value != value || state."$it.key".state == "notSynced") {
 				state."$it.key".value = value
 				state."$it.key".state = "notSynced"
-				cmds << zwave.configurationV1.configurationSet(configurationValue: intToParam(state."$it.key".value, it.size), parameterNumber: it.num, size: it.size)
-				cmds << zwave.configurationV1.configurationGet(parameterNumber: it.num)
+				cmds << zwave.configurationV2.configurationSet(configurationValue: intToParam(state."$it.key".value, it.size), parameterNumber: it.num, size: it.size)
+				cmds << zwave.configurationV2.configurationGet(parameterNumber: it.num)
 				cmdCount = cmdCount + 1
 			}
 		}
@@ -276,7 +276,8 @@ def syncCheck() {
 
 //config related event handlers
 def zwaveEvent(physicalgraph.zwave.commands.configurationv2.ConfigurationReport cmd) {
-	def paramKey
+	log.debug "Config: $cmd"
+    def paramKey
 	paramKey = parameterMap().find( {it.num == cmd.parameterNumber as Integer} ).key 
 	logging("${device.displayName} - Parameter ${paramKey} value is ${cmd.scaledConfigurationValue} expected " + state."$paramKey"?.value, "info")
 	if (state."$paramKey".value == cmd.scaledConfigurationValue) {
@@ -446,13 +447,13 @@ private Map cmdVersions() {
 }
 
 private parameterMap() {[
-	[key: "detectionMode", num: 2, size: 1, type: "enum", options: [
-		0: "0 - power, energy absolute value", 
-		1: "1 - positive/negative power, algebraic sum energy",
-		2: "2 - positive/negative power, energy positive part",
-		3: "3 - positive/negative power, energy negative part"],
-		def: "0", title: "Power and Energy mode", 
-		descr: "For parameters of 101 ~ 103, power, energy detection mode configuration"],
+	//[key: "detectionMode", num: 2, size: 1, type: "enum", options: [
+	//	0: "0 - power, energy absolute value", 
+	//	1: "1 - positive/negative power, algebraic sum energy",
+	//	2: "2 - positive/negative power, energy positive part",
+	//	3: "3 - positive/negative power, energy negative part"],
+	//	def: "0", title: "Power and Energy mode", 
+	//	descr: "For parameters of 101 ~ 103, power, energy detection mode configuration"], //WTF aotec?
 	[key: "reportingThreshold", num: 3, size: 1, type: "enum", options: [
 		0: "0 - disable,", 
 		1: "1 - enable"],
