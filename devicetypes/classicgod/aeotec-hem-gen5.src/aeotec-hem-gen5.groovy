@@ -304,7 +304,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null) {
 		case 7: type = "reactivePower"; unit = "kVar"; break;
 		case 8: type = "reactiveEnergy"; unit = "kVarh"; break; 
 	}
-	logging("${device.displayName} - MeterReport received, ep: ${((ep) ? ep:0)} value: ${cmd.scaledMeterValue} ${unit}",info)
+	logging("${device.displayName} - MeterReport received, ep: ${((ep) ? ep:0)} value: ${cmd.scaledMeterValue} ${unit}", "info")
 	if (ep == null) {
 		sendEvent([name: type, value: cmd.scaledMeterValue, unit: unit, displayed: false])
 		if (!device.currentValue("combinedMeter")?.contains("SYNC") || device.currentValue("combinedMeter") == "SYNC OK." || device.currentValue("combinedMeter") == null ) {
