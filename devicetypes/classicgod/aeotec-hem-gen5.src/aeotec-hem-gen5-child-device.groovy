@@ -20,7 +20,6 @@ metadata {
 		capability "Voltage Measurement"
 		capability "Configuration"
 		capability "Refresh"
-		capability "Polling"
 
 		command "reset"
 
@@ -98,8 +97,4 @@ def reset() {
 
 def refresh() {
 	parent.childRefresh(device.deviceNetworkId)
-}
-
-def poll() {
-	refresh()
 }
