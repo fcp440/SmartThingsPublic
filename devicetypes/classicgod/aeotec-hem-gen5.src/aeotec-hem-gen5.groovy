@@ -153,10 +153,11 @@ def reset() {
 }
 
 def poll() {
-	refresh()
+	//refresh()
 }
 
 def childRefresh(dni) {
+	return [:]
 	logging("${device.displayName} - executing childRefresh() for $dni","info")
 	def cmds = []
 	Integer ep = (dni-"${device.deviceNetworkId}-c") as Integer
@@ -276,11 +277,12 @@ def syncCheck() {
 
 //config related event handlers
 def zwaveEvent(physicalgraph.zwave.commands.configurationv2.ConfigurationReport cmd) {
-    	def paramKey
+	def paramKey
 	paramKey = parameterMap().find( {it.num == cmd.parameterNumber as Integer} ).key 
 	logging("${device.displayName} - Parameter ${paramKey} value is ${cmd.scaledConfigurationValue} expected " + state."$paramKey"?.value, "info")
 	if (state."$paramKey".value == cmd.scaledConfigurationValue) {
 		state."$paramKey".state = "synced"
+	runIn(10, syncCheck)
 	} 
 }
 
