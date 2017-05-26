@@ -482,11 +482,11 @@ private parameterMap() {[
 	[key: "group1", num: 101, size: 4, type: "number", def: 2, min: 0, max: 4210702, title: null, descr: null],
 	[key: "group2", num: 102, size: 4, type: "number", def: 1, min: 0, max: 4210702, title: null, descr: null],
 	[key: "group3", num: 103, size: 4, type: "number", def: 0, min: 0, max: 4210702, title: null, descr: null],
-	[key: "timeGroup1", num: 111, size: 4, type: "number", def: 5, min: 0, max: 268435456, title: "Grop 1 time interval", 
+	[key: "timeGroup1", num: 111, size: 4, type: "number", def: 5, min: 0, max: 268435456, title: "Group 1 time interval", 
 		descr: "The time interval for Report group 1\n0-268435456s"],
-	[key: "timeGroup2", num: 112, size: 4, type: "number", def: 120, min: 0, max: 268435456, title: "Grop 2 time interval", 
+	[key: "timeGroup2", num: 112, size: 4, type: "number", def: 120, min: 0, max: 268435456, title: "Group 2 time interval", 
 		descr: "The time interval for Report group 2\n0-268435456s"],
-	[key: "timeGroup3", num: 113, size: 4, type: "number", def: 120, min: 0, max: 268435456, title: "Grop 3 time interval", 
+	[key: "timeGroup3", num: 113, size: 4, type: "number", def: 120, min: 0, max: 268435456, title: "Group 3 time interval", 
 		descr: "The time interval for Report group 3\n0-268435456s"]
 ]}
 
