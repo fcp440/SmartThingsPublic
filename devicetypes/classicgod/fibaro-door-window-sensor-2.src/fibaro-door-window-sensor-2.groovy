@@ -445,7 +445,7 @@ private parameterMap() {[
 		descr: "Change of temperature resulting in temperature report being sent to the HUB.\n0 - threshold based reports disabled\n1-300 - threshold (0.1-30°C, 0.1°C step, 10 = 1°C)"], 
 	[key: "temperatureInterval", num: 52, size: 2, type: "number", def: 300, min: 0, max: 32400, title: "Interval of temperature reports", 
 		descr: "How often the temperature reports will be sent to the main controller (regardless of parameters 50 and 51).\n0 - periodic temperature reports disabled\n300-32400 - time in seconds"], 
-	[key: "temperatureOffset", num: 53, size: 2, type: "number", def: 0, min: -1000.0, max: 1000.0, title: "Temperature offset", 
+	[key: "temperatureOffset", num: 53, size: 2, type: "number", def: 0, min: -1000, max: 1000, title: "Temperature offset", 
 		descr: "The value to be added to the actual temperature, measured by the sensor.\n-1000–1000 (-100–100°C, 0.1°C step, 10 = 1°C)"], 
 	[key: "temperatureAlarm", num: 54, size: 1, type: "enum", options: [
 		0: "0 - temperature alarms disabled", 
