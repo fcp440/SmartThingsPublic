@@ -85,7 +85,7 @@ metadata {
 		
 		input (
 			title: "Wake up interval",
-			description: "How ofthen should your device automatically sync with the HUB.\n0 or 3600-64800 (in seconds (1-18h), 3600s (1h) step)",
+			description: "How ofthen should your device automatically sync with the HUB. The lower the value, the shorter the battery life.\n0 or 3600-64800 (in seconds (1-18h), 3600s (1h) step)",
 			type: "paragraph",
 			element: "paragraph"
 		)
