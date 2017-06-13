@@ -22,6 +22,7 @@ metadata {
 		capability "Health Check"
 	
 		attribute "temperatureAlarm", "string"
+		command "test"
 	
 		fingerprint mfr: "010F", prod: "0702", model: "1000"
 		fingerprint deviceId: "0x0701", inClusters:"0x5E,0x59,0x22,0x80,0x56,0x7A,0x73,0x98,0x31,0x85,0x70,0x5A,0x72,0x8E,0x71,0x86,0x84"
@@ -57,7 +58,7 @@ metadata {
 		}
 		
 		valueTile("battery", "device.battery", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
-			state "battery", label:'${currentValue}%\n battery ', unit:"%"
+			state "battery", label:'${currentValue}%\n battery', unit:"%"
 		}	
 		
 		standardTile("temperatureAlarm", "device.temperatureAlarm", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
@@ -66,9 +67,13 @@ metadata {
 			state "underheat", label:'underheat', backgroundColor:"#1e9cbb", icon: "st.alarm.temperature.freeze"
 			state "overheat", label:'overheat', backgroundColor:"#d04e00", icon: "st.alarm.temperature.overheat"
 		}	
+		
+		standardTile("test", "device.test", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
+			state "default", label: "test", action: "test", backgroundColor:"#ffffff"
+		}	
 
 		main "FGDW"
-		details(["FGDW","tamper","temperature","battery","temperatureAlarm"])
+		details(["FGDW","tamper","temperature","battery","temperatureAlarm","test"])
 	}
 		
 	preferences {
@@ -113,6 +118,13 @@ metadata {
 	}
 }
 
+
+def test() {
+	//def cmdScale = cmd.scale == 1 ? "F" : "C"
+	//log.info convertOffsetIfNeeded(60)
+	log.info convertTresholdIfNeeded(60)
+	//log.info convertTemperatureIfNeeded(30.44, "F", 1)
+}
 // Parameter configuration, synchronization and verification
 def updated() {
 	logging("${device.displayName} - Executing updated()","info")
@@ -138,11 +150,19 @@ def configure() {
 
 private syncStart() {
 	boolean syncNeeded = false
+	Integer settingValue = null
 	parameterMap().each {
 		if(settings."$it.key" != null) {
 			if (state."$it.key" == null) { state."$it.key" = [value: null, state: "synced"] }
-			if (state."$it.key".value != settings."$it.key" as Integer || state."$it.key".state != "synced" ) {
-				state."$it.key".value = settings."$it.key" as Integer
+			if ( (it.num as Integer) in [51,53] ) { 
+				settingValue = convertOffsetIfNeeded(settings."$it.key" as Integer)
+			} else if ( (it.num as Integer) in [55,56] ) { 
+				settingValue = convertTresholdIfNeeded(settings."$it.key" as Integer)
+			} else {
+				settingValue = settings."$it.key" as Integer
+			}
+			if (state."$it.key".value != settingValue || state."$it.key".state != "synced" ) {
+				state."$it.key".value = settingValue
 				state."$it.key".state = "notSynced"
 				syncNeeded = true
 			}
@@ -213,6 +233,14 @@ private syncCheck() {
 	}
 }
 
+private Integer convertOffsetIfNeeded(Integer value) {
+	return Math.round((getTemperatureScale() == "C") ? value : (value / 1.8) ) as Integer
+}
+
+private Integer convertTresholdIfNeeded(Integer value) {
+	return Math.round((getTemperatureScale() == "C") ? value : ((value - 320) / 1.8) ) as Integer
+}
+
 private multiStatusEvent(String statusValue, boolean force = false, boolean display = false) {
 	if (!device.currentValue("multiStatus")?.contains("Sync") || device.currentValue("multiStatus") == "Sync OK." || force) {
 		sendEvent(name: "multiStatus", value: statusValue, descriptionText: statusValue, displayed: display)
@@ -278,8 +306,13 @@ def zwaveEvent(physicalgraph.zwave.commands.alarmv2.AlarmReport cmd) {
 def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelReport cmd) {
 	logging("${device.displayName} - SensorMultilevelReport received, sensorType: ${cmd.sensorType}, scaledSensorValue: ${cmd.scaledSensorValue}", "info")
 	switch (cmd.sensorType) {
-		case 1: sendEvent(name: "temperature", value: cmd.scaledSensorValue); break;
-		default: logging("${device.displayName} - Unknown sensorType: ${cmd.sensorType}","warn");
+		case 1:
+			def cmdScale = cmd.scale == 1 ? "F" : "C"
+			sendEvent(name: "temperature", unit: getTemperatureScale(), value: convertTemperatureIfNeeded(cmd.scaledSensorValue, cmdScale, cmd.precision), displayed: true)
+			break
+		default: 
+			logging("${device.displayName} - Unknown sensorType: ${cmd.sensorType}","warn")
+			break
 	}
 }
 
@@ -437,26 +470,26 @@ private parameterMap() {[
 		descr: "Defines events indicated by the visual LED indicator. Disabling events might extend battery life."],
 	[key: "tamperDelay", num: 30, size: 2, type: "number", def: 5, min: 0, max: 32400, title: "Tamper - alarm cancellation delay", 
 		descr: "Time period after which a tamper alarm will be cancelled.\n0-32400 - time in seconds"], 
-	[key: "tamperCancelation", num: 31, size: 1, type: "enum", options: [0: "0 - do not send tamper cancellation report", 1: "1 - send tamper cancellation report"], def: "1", title: "Door/window state", 
+	[key: "tamperCancelation", num: 31, size: 1, type: "enum", options: [0: "0 - do not send tamper cancellation report", 1: "1 - send tamper cancellation report"], def: "1", title: "Tamper – reporting alarm cancellation", 
 		descr: "Reporting cancellation of tamper alarm to the controller and 3rd association group."],
 	[key: "temperatureMeasurement", num: 50, size: 2, type: "number", def: 300, min: 0, max: 32400, title: "Interval of temperature measurements", 
 		descr: "This parameter defines how often the temperature will be measured (specific time).\n0 - temperature measurements disabled\n5-32400 - time in seconds"], 
 	[key: "temperatureThreshold", num: 51, size: 2, type: "number", def: 10, min: 0, max: 300, title: "Temperature reports threshold", 
-		descr: "Change of temperature resulting in temperature report being sent to the HUB.\n0 - threshold based reports disabled\n1-300 - threshold (0.1-30°C, 0.1°C step, 10 = 1°C)"], 
+		descr: "Change of temperature resulting in temperature report being sent to the HUB.\n0 - threshold based reports disabled\n1-300 - threshold (0.1-30°C/F, 0.1°C/F step, 10 = 1°C/F)"], 
 	[key: "temperatureInterval", num: 52, size: 2, type: "number", def: 300, min: 0, max: 32400, title: "Interval of temperature reports", 
 		descr: "How often the temperature reports will be sent to the main controller (regardless of parameters 50 and 51).\n0 - periodic temperature reports disabled\n300-32400 - time in seconds"], 
 	[key: "temperatureOffset", num: 53, size: 2, type: "number", def: 0, min: -1000, max: 1000, title: "Temperature offset", 
-		descr: "The value to be added to the actual temperature, measured by the sensor.\n-1000–1000 (-100–100°C, 0.1°C step, 10 = 1°C)"], 
+		descr: "The value to be added to the actual temperature, measured by the sensor.\n-1000–1000 (-100–100°C/F, 0.1°C/F step, 10 = 1°C/F)"], 
 	[key: "temperatureAlarm", num: 54, size: 1, type: "enum", options: [
 		0: "0 - temperature alarms disabled", 
 		1: "1 - high temperature alarm",
 		2: "2 - low temperature alarm",
 		3: "3 - high and low temperature alarms"], 
 		def: "0", title: "Temperature alarm reports", 
-		descr: "Temperature alarms reported to the Z-Wave controller."],
-	[key: "temperatureHigh", num: 55, size: 2, type: "number", def: 350, min: 1, max: 600, title: "High temperature alarm threshold", 
-		descr: "If temperature is higher than set value, overheat high temperature alarm will be triggered.\n1-600 (0.1-60°C, 0.1°C step, 10 = 1°C)"], 
-	[key: "temperatureLow", num: 56, size: 2, type: "number", def: 100, min: 0, max: 599, title: "Low temperature alarm threshold", 
-		descr: "If temperature is lower than set value, low temperature alarm will be triggered.\n0-599 (0-59.9°C, 0.1°C step, 10 = 1°C)"]
+		descr: "Temperature alarms reported to the Z-Wave controller. Thresholds are set in parameters 55 and 56"],
+	[key: "temperatureHigh", num: 55, size: 2, type: "number", def: 350, min: 1, max: 1400, title: "High temperature alarm threshold", 
+		descr: "If temperature is higher than set value, overheat high temperature alarm will be triggered.\n1-1400 (0.1-60°C/32.2-140°F, 0.1°C/F step, 10 = 1°C/F)"], 
+	[key: "temperatureLow", num: 56, size: 2, type: "number", def: 100, min: 0, max: 1398, title: "Low temperature alarm threshold", 
+		descr: "If temperature is lower than set value, low temperature alarm will be triggered.\n0-1398 (0-59.9°C/32-139.8°F, 0.1°C/F step, 10 = 1°C/F)"]
 	]
 }
