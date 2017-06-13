@@ -66,17 +66,22 @@ metadata {
 			state "clear", label:'', backgroundColor:"#ffffff", icon: "st.alarm.temperature.normal"
 			state "underheat", label:'underheat', backgroundColor:"#1e9cbb", icon: "st.alarm.temperature.freeze"
 			state "overheat", label:'overheat', backgroundColor:"#d04e00", icon: "st.alarm.temperature.overheat"
-		}	
-		
-		standardTile("test", "device.test", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
-			state "default", label: "test", action: "test", backgroundColor:"#ffffff"
-		}	
+		}
 
 		main "FGDW"
-		details(["FGDW","tamper","temperature","battery","temperatureAlarm","test"])
+		details(["FGDW","tamper","temperature","battery","temperatureAlarm"])
 	}
 		
 	preferences {
+		
+ 		input (
+			title: "Fibaro Door/Window Sensor 2",
+			description: "Tap to view the manual.",
+			image: "http://manuals.fibaro.com/wp-content/uploads/2017/05/dws2.jpg",
+			url: "http://manuals.fibaro.com/content/manuals/en/FGDW-002/FGDW-002-EN-T-v1.0.pdf",
+			type: "href",
+			element: "href"
+		)
 		
 		input (
 			title: "Wake up interval",
@@ -118,13 +123,6 @@ metadata {
 	}
 }
 
-
-def test() {
-	//def cmdScale = cmd.scale == 1 ? "F" : "C"
-	//log.info convertOffsetIfNeeded(60)
-	log.info convertTresholdIfNeeded(60)
-	//log.info convertTemperatureIfNeeded(30.44, "F", 1)
-}
 // Parameter configuration, synchronization and verification
 def updated() {
 	logging("${device.displayName} - Executing updated()","info")
