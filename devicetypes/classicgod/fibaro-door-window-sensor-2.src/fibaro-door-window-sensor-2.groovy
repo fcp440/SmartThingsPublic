@@ -125,8 +125,8 @@ metadata {
 
 // Parameter configuration, synchronization and verification
 def updated() {
-	logging("${device.displayName} - Executing updated()","info")
 	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
+	logging("${device.displayName} - Executing updated()","info")
 
 	if ( settings.temperatureAlarm as Integer == 0 ) { 
 		sendEvent(name: "temperatureAlarm", value: null, displayed: false) 
