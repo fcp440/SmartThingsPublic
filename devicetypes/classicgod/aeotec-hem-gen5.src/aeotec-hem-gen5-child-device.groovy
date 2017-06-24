@@ -52,15 +52,15 @@ metadata {
 		}
 		
 		valueTile("energy", "device.energy", decoration: "flat", width: 2, height: 2) {
-			state "energy", label:'${currentValue} \nkWh', unit: "kWh"
+			state "energy", label:'${currentValue}\n kWh', unit: "kWh"
 		}
 		
 		valueTile("voltage", "device.voltage", decoration: "flat", width: 2, height: 2) {
-			state "voltage", label:'${currentValue} \nV', unit: "V"
+			state "voltage", label:'${currentValue}\n V', unit: "V"
 		}
 		
 		valueTile("current", "device.current", decoration: "flat", width: 2, height: 2) {
-			state "current", label:'${currentValue} \nA', unit: "A"
+			state "current", label:'${currentValue}\n A', unit: "A"
 		}
 		
 		standardTile("reset", "device.reset", decoration: "flat", width: 2, height: 2) {
