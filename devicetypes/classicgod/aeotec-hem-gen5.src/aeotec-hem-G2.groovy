@@ -1,5 +1,5 @@
 /**
- *  Aeotec Home Energy Meter G3
+ *  Aeotec Home Energy Meter G2
  *  Requires Aeotec HEM Gen5 Child Device
  *
  *  Copyright 2017 Artur Draga
