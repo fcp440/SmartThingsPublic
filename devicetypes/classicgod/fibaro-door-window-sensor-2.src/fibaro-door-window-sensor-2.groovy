@@ -148,14 +148,14 @@ private syncStart() {
 	boolean syncNeeded = false
 	Integer settingValue = null
 	parameterMap().each {
-		if(settings."$it.key" != null) {
+		if(settings."$it.key" != null || it.num == 54) {
 			if (state."$it.key" == null) { state."$it.key" = [value: null, state: "synced"] }
-			if ( (it.num as Integer) in [53] ) { 
+			if ( (it.num as Integer) == 53 ) { 
 				settingValue = convertOffsetIfNeeded(settings."$it.key" as Integer)
-			} else if ( (it.num as Integer) in [54] ) { 
-				settingValue = ((settings."temperatureHigh" > 0) ? 1 : 0) + ((settings."temperatureLow" > 0) ? 2 : 0)
+			} else if ( (it.num as Integer) == 54 ) { 
+				settingValue = (((settings."temperatureHigh" as Integer) == 0) ? 0 : 1) + (((settings."temperatureLow" as Integer) == 0) ? 0 : 2)
 			} else if ( (it.num as Integer) in [55,56] ) { 
-				settingValue = (settings."$it.key" == 0) ? state."$it.key".value : settings."$it.key"
+				settingValue = (((settings."$it.key" as Integer) == 0) ? state."$it.key".value : settings."$it.key") as Integer
 			} else {
 				settingValue = settings."$it.key" as Integer
 			}
@@ -504,7 +504,7 @@ private parameterMap() {[
 		500: "122°F/50°C",
 		550: "131°F/55°C",
 		600: "140°F/60°C"],
-	 	def: 350, title: "High temperature alarm threshold", 
+		def: 350, title: "High temperature alarm threshold", 
 		descr: "If temperature is higher than set value, overheat high temperature alarm will be triggered."], 
 	[key: "temperatureLow", num: 56, size: 2, type: "enum", options: [
 		0: "disabled",
