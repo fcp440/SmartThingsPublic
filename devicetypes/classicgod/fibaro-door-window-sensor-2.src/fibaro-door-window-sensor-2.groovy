@@ -94,7 +94,7 @@ metadata {
 			title: null, 
 			type: "number", 
 			range: "0..18", 
-			defaultValue: 21600, 
+			defaultValue: 6, 
 			required: false 
 		)
 		
