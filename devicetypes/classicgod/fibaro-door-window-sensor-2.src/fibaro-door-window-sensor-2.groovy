@@ -84,7 +84,7 @@ metadata {
 		
 		input (
 			title: "Wake up interval",
-			description: "How ofthen should your device automatically sync with the HUB. The lower the value, the shorter the battery life.\n0 or 3600-64800 (in seconds (1-18h), 3600s (1h) step)",
+			description: "How ofthen should your device automatically sync with the HUB. The lower the value, the shorter the battery life.\n0 or 1-18 (in hours)",
 			type: "paragraph",
 			element: "paragraph"
 		)
@@ -93,7 +93,7 @@ metadata {
 			name: "wakeUpInterval", 
 			title: null, 
 			type: "number", 
-			range: "0..64800", 
+			range: "0..18", 
 			defaultValue: 21600, 
 			required: false 
 		)
@@ -169,9 +169,9 @@ private syncStart() {
 	
 	if(settings.wakeUpInterval != null) {
 		if (state.wakeUpInterval == null) { state.wakeUpInterval = [value: null, state: "synced"] }
-		if (state.wakeUpInterval.value != settings.wakeUpInterval as Integer) {
-			sendEvent(name: "checkInterval", value: (settings.wakeUpInterval as Integer) * 4 + 120, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID])
-			state.wakeUpInterval.value = settings.wakeUpInterval as Integer
+		if (state.wakeUpInterval.value != ((settings.wakeUpInterval as Integer) * 3600)) {
+			sendEvent(name: "checkInterval", value: (settings.wakeUpInterval as Integer) * 3600 * 4 + 120, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID])
+			state.wakeUpInterval.value = ((settings.wakeUpInterval as Integer) * 3600)
 			state.wakeUpInterval.state = "notSynced"
 			syncNeeded = true
 		}
@@ -291,11 +291,13 @@ def zwaveEvent(physicalgraph.zwave.commands.alarmv2.AlarmReport cmd) {
 			if (cmd.zwaveAlarmEvent == 3) { multiStatusEvent("Tamper - $lastTime") }
 			break;
 		case 4:
-			switch (cmd.zwaveAlarmEvent) {
-				case 0: sendEvent(name: "temperatureAlarm", value: "clear"); break;
-				case 2: sendEvent(name: "temperatureAlarm", value: "overheat"); break;
-				case 6: sendEvent(name: "temperatureAlarm", value: "underheat"); break;
-			}; 
+			if (device.currentValue("temperatureAlarm")?.value != null) {
+				switch (cmd.zwaveAlarmEvent) {
+					case 0: sendEvent(name: "temperatureAlarm", value: "clear"); break;
+					case 2: sendEvent(name: "temperatureAlarm", value: "overheat"); break;
+					case 6: sendEvent(name: "temperatureAlarm", value: "underheat"); break;
+				}; 
+			};
 			break;
 		default: logging("${device.displayName} - Unknown zwaveAlarmType: ${cmd.zwaveAlarmType}","warn");
 	}
@@ -452,7 +454,7 @@ private Map cmdVersions() {
 }
 
 private parameterMap() {[
-	[key: "doorState", num: 1, size: 1, type: "enum", options: [0: "0 - closed when magnet near", 1: "1 - opened when magnet near"], def: "0", title: "Door/window state", 
+	[key: "doorState", num: 1, size: 1, type: "enum", options: [0: "Closed when magnet near", 1: "Opened when magnet near"], def: "0", title: "Door/window state", 
 		descr: "Defines the state of door/window depending on the magnet position."],
 	[key: "ledIndications", num: 2, size: 1, type: "enum", options: [
 		//0: "0 - indicator disabled", 
