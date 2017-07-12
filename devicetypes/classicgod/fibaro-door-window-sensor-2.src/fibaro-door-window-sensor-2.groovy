@@ -280,7 +280,7 @@ def zwaveEvent(physicalgraph.zwave.commands.applicationstatusv1.ApplicationRejec
 //event handlers
 def zwaveEvent(physicalgraph.zwave.commands.alarmv2.AlarmReport cmd) {
 	logging("${device.displayName} - AlarmReport received, zwaveAlarmType: ${cmd.zwaveAlarmType}, zwaveAlarmEvent: ${cmd.zwaveAlarmEvent}", "info")
-	def lastTime = new Date().format("yyyy MMM dd EEE HH:mm:ss", location.timeZone)
+	def lastTime = new Date().format("yyyy MMM dd EEE hh:mm:ss a", location.timeZone)
 	switch (cmd.zwaveAlarmType) {
 		case 6: 
 			sendEvent(name: "contact", value: (cmd.zwaveAlarmEvent == 22)? "open":"closed"); 
