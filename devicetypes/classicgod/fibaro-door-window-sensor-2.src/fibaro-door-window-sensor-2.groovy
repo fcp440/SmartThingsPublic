@@ -122,7 +122,6 @@ metadata {
 	}
 }
 
-// Parameter configuration, synchronization and verification
 def updated() {
 	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
 	logging("${device.displayName} - Executing updated()","info")
@@ -149,10 +148,8 @@ private syncStart() {
 	Integer settingValue = null
 	parameterMap().each {
 		if(settings."$it.key" != null || it.num == 54) {
-			if (state."$it.key" == null) { state."$it.key" = [value: null, state: "synced"] }
-			if ( (it.num as Integer) == 53 ) { 
-				settingValue = convertOffsetIfNeeded(settings."$it.key" as Integer)
-			} else if ( (it.num as Integer) == 54 ) { 
+			if (state."$it.key" == null) { state."$it.key" = [value: null, state: "synced"] } 
+			if ( (it.num as Integer) == 54 ) { 
 				settingValue = (((settings."temperatureHigh" as Integer) == 0) ? 0 : 1) + (((settings."temperatureLow" as Integer) == 0) ? 0 : 2)
 			} else if ( (it.num as Integer) in [55,56] ) { 
 				settingValue = (((settings."$it.key" as Integer) == 0) ? state."$it.key".value : settings."$it.key") as Integer
@@ -168,8 +165,8 @@ private syncStart() {
 	}
 	
 	if(settings.wakeUpInterval != null) {
-		if (state.wakeUpInterval == null) { state.wakeUpInterval = [value: null, state: "synced"] }
-		if (state.wakeUpInterval.value != ((settings.wakeUpInterval as Integer) * 3600)) {
+		if (state.wakeUpInterval == null) { state.wakeUpInterval = [value: null, state: "synced"] } 
+		if (state.wakeUpInterval.value != ((settings.wakeUpInterval as Integer) * 3600)) { 
 			sendEvent(name: "checkInterval", value: (settings.wakeUpInterval as Integer) * 3600 * 4 + 120, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID])
 			state.wakeUpInterval.value = ((settings.wakeUpInterval as Integer) * 3600)
 			state.wakeUpInterval.state = "notSynced"
@@ -219,6 +216,7 @@ private syncCheck() {
 			notSynced << it
 		}
 	}
+	
 	if (failed) {
 		multiStatusEvent("Sync failed! Verify parameter: ${failed[0].num}", true, true)
 	} else if (incorrect) {
@@ -231,21 +229,12 @@ private syncCheck() {
 	}
 }
 
-private Integer convertOffsetIfNeeded(Integer value) {
-	return Math.round((getTemperatureScale() == "C") ? value : (value / 1.8) ) as Integer
-}
-
-private Integer convertTresholdIfNeeded(Integer value) {
-	return Math.round((getTemperatureScale() == "C") ? value : ((value - 320) / 1.8) ) as Integer
-}
-
 private multiStatusEvent(String statusValue, boolean force = false, boolean display = false) {
 	if (!device.currentValue("multiStatus")?.contains("Sync") || device.currentValue("multiStatus") == "Sync OK." || force) {
 		sendEvent(name: "multiStatus", value: statusValue, descriptionText: statusValue, displayed: display)
 	}
 }
 
-//synchronization related event handlers
 def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd) {
 	logging("${device.displayName} woke up", "info")
 	def cmds = []
@@ -277,10 +266,9 @@ def zwaveEvent(physicalgraph.zwave.commands.applicationstatusv1.ApplicationRejec
 	}
 }
 
-//event handlers
 def zwaveEvent(physicalgraph.zwave.commands.alarmv2.AlarmReport cmd) {
 	logging("${device.displayName} - AlarmReport received, zwaveAlarmType: ${cmd.zwaveAlarmType}, zwaveAlarmEvent: ${cmd.zwaveAlarmEvent}", "info")
-	def lastTime = new Date().format("yyyy MMM dd EEE hh:mm:ss a", location.timeZone)
+	def lastTime = new Date().format("yyyy MMM dd EEE h:mm:ss a", location.timeZone)
 	switch (cmd.zwaveAlarmType) {
 		case 6: 
 			sendEvent(name: "contact", value: (cmd.zwaveAlarmEvent == 22)? "open":"closed"); 
@@ -321,11 +309,6 @@ def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
 	sendEvent(name: "battery", value: cmd.batteryLevel.toString(), unit: "%", displayed: true)
 }
 
-/*
-####################
-## Z-Wave Toolkit ##
-####################
-*/
 def parse(String description) {
 	def result = []
 	logging("${device.displayName} - Parsing: ${description}")
@@ -370,16 +353,6 @@ def zwaveEvent(physicalgraph.zwave.commands.crc16encapv1.Crc16Encap cmd) {
 	}
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCmdEncap cmd) {
-	def encapsulatedCommand = cmd.encapsulatedCommand(cmdVersions())
-	if (encapsulatedCommand) {
-		logging("${device.displayName} - Parsed MultiChannelCmdEncap ${encapsulatedCommand}")
-		zwaveEvent(encapsulatedCommand, cmd.sourceEndPoint as Integer)
-	} else {
-		log.warn "Could not extract MultiChannel command from $cmd"
-	}
-}
-
 private logging(text, type = "debug") {
 	if (settings.logging == "true") {
 		log."$type" text
@@ -392,13 +365,8 @@ private secEncap(physicalgraph.zwave.Command cmd) {
 }
 
 private crcEncap(physicalgraph.zwave.Command cmd) {
-		logging("${device.displayName} - encapsulating command using CRC16 Encapsulation, command: $cmd","info")
-		zwave.crc16EncapV1.crc16Encap().encapsulate(cmd).format() 
-}
-
-private multiEncap(physicalgraph.zwave.Command cmd, Integer ep) {
-	logging("${device.displayName} - encapsulating command using Multi Channel Encapsulation, ep: $ep command: $cmd","info")
-	zwave.multiChannelV3.multiChannelCmdEncap(destinationEndPoint:ep).encapsulate(cmd)
+	logging("${device.displayName} - encapsulating command using CRC16 Encapsulation, command: $cmd","info")
+	zwave.crc16EncapV1.crc16Encap().encapsulate(cmd).format() 
 }
 
 private encap(physicalgraph.zwave.Command cmd) {
@@ -412,24 +380,8 @@ private encap(physicalgraph.zwave.Command cmd) {
 	}
 }
 
-private encap(physicalgraph.zwave.Command cmd, Integer ep) {
-	encap(multiEncap(cmd, ep))
-}
-
-private encap(List encapList) {
-	encap(encapList[0], encapList[1])
-}
-
-private encap(Map encapMap) {
-	encap(encapMap.cmd, encapMap.ep)
-}
-
 private encapSequence(cmds, Integer delay=250) {
 	delayBetween(cmds.collect{ encap(it) }, delay)
-}
-
-private encapSequence(cmds, Integer delay, Integer ep) {
-	delayBetween(cmds.collect{ encap(it, ep) }, delay)
 }
 
 private List intToParam(Long value, Integer size = 1) {
@@ -440,31 +392,19 @@ private List intToParam(Long value, Integer size = 1) {
 	}
 	return result
 }
-/*
-##########################
-## Device Configuration ##
-##########################
-*/
+
 private Map cmdVersions() {
-	//[0x5E: 2, 0x59: 1, 0x80: 1, 0x56: 1, 0x7A: 3, 0x73: 1, 0x98: 1, 0x22: 1, 0x85: 2, 0x5B: 1, 0x70: 2, 0x8E: 2, 0x86: 2, 0x84: 2, 0x75: 2, 0x72: 2] //Fibaro KeyFob
-	//[0x5E: 2, 0x86: 1, 0x72: 2, 0x59: 1, 0x80: 1, 0x73: 1, 0x56: 1, 0x22: 1, 0x31: 5, 0x98: 1, 0x7A: 3, 0x20: 1, 0x5A: 1, 0x85: 2, 0x84: 2, 0x71: 3, 0x8E: 2, 0x70: 2, 0x30: 1, 0x9C: 1] //Fibaro Motion Sensor ZW5
-	//[0x5E: 2, 0x86: 1, 0x72: 1, 0x59: 1, 0x73: 1, 0x22: 1, 0x56: 1, 0x32: 3, 0x71: 1, 0x98: 1, 0x7A: 1, 0x25: 1, 0x5A: 1, 0x85: 2, 0x70: 2, 0x8E: 2, 0x60: 3, 0x75: 1, 0x5B: 1] //Fibaro Double Switch 2
-	//[0x5E: 2, 0x22: 1, 0x59: 1, 0x56: 1, 0x7A: 3, 0x32: 3, 0x71: 1, 0x73: 1, 0x98: 1, 0x31: 5, 0x85: 2, 0x70: 2, 0x72: 2, 0x5A: 1, 0x8E: 2, 0x25: 1, 0x86: 2] //Fibaro Wall Plug ZW5
-	  [0x5E: 2, 0x59: 1, 0x22: 1, 0x80: 1, 0x56: 1, 0x7A: 3, 0x73: 1, 0x98: 1, 0x31: 5, 0x85: 2, 0x70: 2, 0x5A: 1, 0x72: 2, 0x8E: 2, 0x71: 2, 0x86: 1, 0x84: 2] //Fibaro Door/Window Sensor 2
+	[0x5E: 2, 0x59: 1, 0x22: 1, 0x80: 1, 0x56: 1, 0x7A: 3, 0x73: 1, 0x98: 1, 0x31: 5, 0x85: 2, 0x70: 2, 0x5A: 1, 0x72: 2, 0x8E: 2, 0x71: 2, 0x86: 1, 0x84: 2]
 }
 
 private parameterMap() {[
 	[key: "doorState", num: 1, size: 1, type: "enum", options: [0: "Closed when magnet near", 1: "Opened when magnet near"], def: "0", title: "Door/window state", 
 		descr: "Defines the state of door/window depending on the magnet position."],
 	[key: "ledIndications", num: 2, size: 1, type: "enum", options: [
-		//0: "0 - indicator disabled", 
 		1: "Indication of opening/closing",
 		2: "Indication of wake up",
-		//3: "3 - indication of opening/closin & wake up",
 		4: "Indication of device tampering",
-		//5: "5 - indication of opening/closin & tampering",
 		6: "Indication of wake up & tampering",
-		//7: "7 - opening/closin, wake up & tampering"
 		], 
 		def: "6", title: "Visual LED indications", 
 		descr: "Defines events indicated by the visual LED indicator. Disabling events might extend battery life."],
@@ -483,11 +423,7 @@ private parameterMap() {[
 		22: "4°F/2.2°C",
 		28: "5°F/2.8°C"],
 		def: 11, title: "Temperature reports threshold", 
-		descr: "Change of temperature resulting in temperature report being sent to the HUB."], 
-	//[key: "temperatureInterval", num: 52, size: 2, type: "number", def: 0, min: 0, max: 32400, title: "Interval of temperature reports", 
-	//	descr: "How often the temperature reports will be sent to the main controller (regardless of parameters 50 and 51).\n0 - periodic temperature reports disabled\n300-32400 - time in seconds"], 
-	//[key: "temperatureOffset", num: 53, size: 2, type: "number", def: 0, min: -1000, max: 1000, title: "Temperature offset", 
-	//	descr: "The value to be added to the actual temperature, measured by the sensor.\n-1000–1000 (-100–100°C/F, 0.1°C/F step, 10 = 1°C/F)"], 
+		descr: "Change of temperature resulting in temperature report being sent to the HUB."],
 	[key: "temperatureAlarm", num: 54, size: 1, type: "enum", options: [
 		0: "Temperature alarms disabled", 
 		1: "High temperature alarm",
