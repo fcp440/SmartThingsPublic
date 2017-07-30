@@ -20,8 +20,10 @@ metadata {
 		capability "Voltage Measurement"
 		capability "Configuration"
 		capability "Refresh"
+		capability "Sensor"
 
 		command "reset"
+		command "resetMeter"
 
 		attribute "current", "number"
 		attribute "combinedMeter", "string"
@@ -52,15 +54,15 @@ metadata {
 		}
 		
 		valueTile("energy", "device.energy", decoration: "flat", width: 2, height: 2) {
-			state "energy", label:'${currentValue}\n kWh', unit: "kWh"
+			state "energy", label:'${currentValue}\n kWh ', unit: "kWh"
 		}
 		
 		valueTile("voltage", "device.voltage", decoration: "flat", width: 2, height: 2) {
-			state "voltage", label:'${currentValue}\n V', unit: "V"
+			state "voltage", label:'${currentValue}\n V ', unit: "V"
 		}
 		
 		valueTile("current", "device.current", decoration: "flat", width: 2, height: 2) {
-			state "current", label:'${currentValue}\n A', unit: "A"
+			state "current", label:'${currentValue}\n A ', unit: "A"
 		}
 		
 		standardTile("reset", "device.reset", decoration: "flat", width: 2, height: 2) {
@@ -89,10 +91,14 @@ metadata {
 def reset() {
 	if ( state.lastReset && (now() - state.lastReset) < 2000 ) {
 		state.lastReset = now() - 2000
-		parent.childReset(device.deviceNetworkId)
+		resetMeter()
 	} else {
 		state.lastReset = now()
 	}
+}
+
+def resetMeter() {
+	parent.childReset(device.deviceNetworkId)
 }
 
 def refresh() {
