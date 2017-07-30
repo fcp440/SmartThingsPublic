@@ -307,7 +307,6 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null) {
 		case 7: type = "reactivePower"; unit = "kVar"; break;
 		case 8: type = "reactiveEnergy"; unit = "kVarh"; break; 
 	}
-    if (unit == "kWh") log.debug "${device.displayName} - MeterReport received, ep: ${((ep) ? ep:0)} value: ${cmd.scaledMeterValue} ${unit}"
 	logging("${device.displayName} - MeterReport received, ep: ${((ep) ? ep:0)} value: ${cmd.scaledMeterValue} ${unit}", "info")
 	if (ep == null) {
 		sendEvent([name: type, value: cmd.scaledMeterValue, unit: unit, displayed: false])
