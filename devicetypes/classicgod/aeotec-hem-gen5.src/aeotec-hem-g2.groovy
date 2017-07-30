@@ -24,6 +24,7 @@ metadata {
 		capability "Health Check"
 
 		command "reset"
+		command "resetMeter"
 
 		attribute "current", "number"
 		attribute "combinedMeter", "string"
@@ -135,18 +136,22 @@ def refresh() {
 
 def reset() {
 	logging("${device.displayName} - executing reset()","info")
-	def cmds = []
 	if ( state.lastReset && (now() - state.lastReset) < 2000 ) {
-		sendEvent(name: "combinedMeter", value: "RESETTING KWH!", displayed: false)
-		state.lastReset = now() - 2000
-		cmds << zwave.meterV3.meterReset()
-		cmds << zwave.meterV3.meterGet(scale: 0)
-		cmds << [zwave.meterV3.meterGet(scale: 0),1]
-		cmds << [zwave.meterV3.meterGet(scale: 0),2]
-		cmds << [zwave.meterV3.meterGet(scale: 0),3]
+		return resetMeter()
 	} else {
 		state.lastReset = now()
 	}
+}
+
+def resetMeter() {
+	logging("${device.displayName} - executing resetMeter()","info")
+	def cmds = []
+	sendEvent(name: "combinedMeter", value: "RESETTING KWH!", displayed: false)
+	cmds << zwave.meterV3.meterReset()
+	cmds << zwave.meterV3.meterGet(scale: 0)
+	cmds << [zwave.meterV3.meterGet(scale: 0),1]
+	cmds << [zwave.meterV3.meterGet(scale: 0),2]
+	cmds << [zwave.meterV3.meterGet(scale: 0),3]
 	if (cmds) { return encapSequence(cmds,1000) }
 }
 
