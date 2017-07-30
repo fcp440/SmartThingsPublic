@@ -22,8 +22,10 @@ metadata {
 		capability "Configuration"
 		capability "Refresh"
 		capability "Health Check"
+        capability "Sensor"
 
 		command "reset"
+        command "resetMeter"
 
 		attribute "current", "number"
 		attribute "combinedMeter", "string"
@@ -57,13 +59,13 @@ metadata {
 			]
 		}
 		valueTile("energy", "device.energy", decoration: "flat", width: 2, height: 2) {
-			state "energy", label:'${currentValue}\n kWh', unit: "kWh"
+			state "energy", label:'${currentValue}\n kWh ', unit: "kWh"
 		}
 		valueTile("voltage", "device.voltage", decoration: "flat", width: 2, height: 2) {
-			state "voltage", label:'${currentValue}\n V', unit: "V"
+			state "voltage", label:'${currentValue}\n V ', unit: "V"
 		}
 		valueTile("current", "device.current", decoration: "flat", width: 2, height: 2) {
-			state "current", label:'${currentValue}\n A', unit: "A"
+			state "current", label:'${currentValue}\n A ', unit: "A"
 		}
 		standardTile("reset", "device.reset", decoration: "flat", width: 2, height: 2) {
 			state "default", label:'Reset kWh', action:"reset", icon: "st.Kids.kids4"
@@ -136,18 +138,22 @@ def refresh() {
 
 def reset() {
 	logging("${device.displayName} - executing reset()","info")
-	def cmds = []
 	if ( state.lastReset && (now() - state.lastReset) < 2000 ) {
-		sendEvent(name: "combinedMeter", value: "RESETTING KWH!", displayed: false)
-		state.lastReset = now() - 2000
-		cmds << zwave.meterV3.meterReset()
-		cmds << zwave.meterV3.meterGet(scale: 0)
-		cmds << [zwave.meterV3.meterGet(scale: 0),1]
-		cmds << [zwave.meterV3.meterGet(scale: 0),2]
-		cmds << [zwave.meterV3.meterGet(scale: 0),3]
+		return resetMeter()
 	} else {
 		state.lastReset = now()
 	}
+}
+
+def resetMeter() {
+	logging("${device.displayName} - executing resetMeter()","info")
+	def cmds = []
+	sendEvent(name: "combinedMeter", value: "RESETTING KWH!", displayed: false)
+	cmds << zwave.meterV3.meterReset()
+	cmds << zwave.meterV3.meterGet(scale: 0)
+	cmds << [zwave.meterV3.meterGet(scale: 0),1]
+	cmds << [zwave.meterV3.meterGet(scale: 0),2]
+	cmds << [zwave.meterV3.meterGet(scale: 0),3]
 	if (cmds) { return encapSequence(cmds,1000) }
 }
 
@@ -301,6 +307,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null) {
 		case 7: type = "reactivePower"; unit = "kVar"; break;
 		case 8: type = "reactiveEnergy"; unit = "kVarh"; break; 
 	}
+    if (unit == "kWh") log.debug "${device.displayName} - MeterReport received, ep: ${((ep) ? ep:0)} value: ${cmd.scaledMeterValue} ${unit}"
 	logging("${device.displayName} - MeterReport received, ep: ${((ep) ? ep:0)} value: ${cmd.scaledMeterValue} ${unit}", "info")
 	if (ep == null) {
 		sendEvent([name: type, value: cmd.scaledMeterValue, unit: unit, displayed: false])
