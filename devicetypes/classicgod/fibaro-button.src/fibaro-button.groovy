@@ -18,6 +18,12 @@ metadata {
 		capability "Switch"
 		capability "Configuration"
 		capability "Battery"
+		
+		command "push1"
+		command "push2"
+		command "push3"
+		command "push4"
+		command "push5"
 
 		fingerprint mfr: "010F", prod: "0F01"
 		fingerprint deviceId: "0x1801", inClusters: "0x5E,0x59,0x80,0x73,0x56,0x98,0x7A,0x5B,0x85,0x84,0x5A,0x86,0x72,0x71,0x70,0x8E,0x9C"
@@ -25,21 +31,38 @@ metadata {
 	}
 
 	tiles (scale: 2) {
-		multiAttributeTile(name:"FGB", type:"lighting", width:6, height:4) {
-			tileAttribute("device.battery", key:"PRIMARY_CONTROL") {
-				attributeState("default", label:'${currentValue}% battery', backgroundColor:"#ffffff")
+		multiAttributeTile(name:"FGB", type:"lighting", width:6, height:4, canChangeIcon: true) {
+			tileAttribute("device.button", key:"PRIMARY_CONTROL") {
+				attributeState("default", label:'PUSH', action: 'push1', backgroundColor:"#cc0000", icon: "st.unknown.zwave.remote-controller")
 			}
 			tileAttribute("device.multiStatus", key:"SECONDARY_CONTROL") {
 				attributeState("multiStatus", label:'${currentValue}')
 			}
 		}
 
-		valueTile("battery", "device.battery", inactiveLabel: false, width: 2, height: 2, decoration: "flat", canChangeIcon: true) {
-			state "battery", label:'${currentValue}%', unit:"%", icon: "st.unknown.zwave.remote-controller"
+		valueTile("push2", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+			state "default", label:"PUSH\n2\nTIMES", action:"push2"
+		}
+		valueTile("push3", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+			state "default", label:"PUSH\n3\nTIMES", action:"push3"
+		}
+		valueTile("push4", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+			state "default", label:"PUSH\n4\nTIMES", action:"push4"
+		}
+		valueTile("push5", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+			state "default", label:"PUSH\n5\nTIMES", action:"push5"
+		}
+		standardTile("switch", "device.switch", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+			state "off", label:"HOLD", action:"on", backgroundColor:"#ffffff", icon: "st.contact.contact.closed"
+			state "on", label:"RELEASE", action:"off", backgroundColor:"#cc0000", icon: "st.contact.contact.open"
 		}
 
-		main "battery"
-		details(["FGB"])
+		valueTile("battery", "device.battery", inactiveLabel: false, width: 2, height: 2, decoration: "flat", canChangeIcon: false) {
+			state "battery", label:'${currentValue}%\nbattery', unit:"%"
+		}
+
+		main "FGB"
+		details(["FGB","push2","push3","push4","push5","switch","battery"])
 	}
 
 	preferences {
@@ -56,6 +79,14 @@ metadata {
 		input ( name: "logging", title: "Logging", type: "boolean", required: false )
 	}
 }
+
+def push1() { buttonEvent(1, "pushed") }
+def push2() { buttonEvent(2, "pushed") }
+def push3() { buttonEvent(3, "pushed") }
+def push4() { buttonEvent(4, "pushed") }
+def push5() { buttonEvent(5, "pushed") }
+def on() { switchEvent("on"); buttonEvent(1, "held") }
+def off() { switchEvent("off") }
 
 def updated() {
 	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
@@ -109,7 +140,7 @@ def statusEvent(String text) {
 }
 
 def switchEvent(String value) {
-	sendEvent(name: "switch", value: value, isStateChange: false)
+	sendEvent(name: "switch", value: value, isStateChange: true, displayed: false)
 }
 
 def parse(String description) {
