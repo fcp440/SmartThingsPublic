@@ -80,13 +80,13 @@ metadata {
 	}
 }
 
-def push1() { buttonEvent(1, "pushed") }
-def push2() { buttonEvent(2, "pushed") }
-def push3() { buttonEvent(3, "pushed") }
-def push4() { buttonEvent(4, "pushed") }
-def push5() { buttonEvent(5, "pushed") }
-def on() { switchEvent("on"); buttonEvent(1, "held") }
-def off() { switchEvent("off") }
+def push1() { buttonEvent(1, "pushed"); statusEvent("Pushed once (virtual)"); }
+def push2() { buttonEvent(2, "pushed"); statusEvent("Pushed twice (virtual)"); }
+def push3() { buttonEvent(3, "pushed"); statusEvent("Pushed 3 times (virtual)") }
+def push4() { buttonEvent(4, "pushed"); statusEvent("Pushed 4 times (virtual)") }
+def push5() { buttonEvent(5, "pushed"); statusEvent("Pushed 5 times (virtual)") }
+def on() { switchEvent("on"); buttonEvent(1, "held"); statusEvent("Held (virtual)") }
+def off() { switchEvent("off"); statusEvent("Released (virtual)") }
 
 def updated() {
 	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
@@ -120,13 +120,13 @@ def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
 def zwaveEvent(physicalgraph.zwave.commands.centralscenev1.CentralSceneNotification cmd) {
 	//log.debug "Scene: ${cmd.keyAttributes} ${calcParamValue()}"
 	switch (cmd.keyAttributes as Integer) {
-		case 0: buttonEvent(1, "pushed"); statusEvent("Pushed once"); break;
-		case 1: buttonEvent(1, "released"); switchEvent("off"); statusEvent("Released"); break;
-		case 2: buttonEvent(1, "held"); switchEvent("on"); statusEvent("Held"); break;
-		case 3: buttonEvent(2, "pushed"); statusEvent("Pushed twice"); break;
-		case 4: buttonEvent(3, "pushed"); statusEvent("Pushed 3 times"); break;
-		case 5: buttonEvent(4, "pushed"); statusEvent("Pushed 4 times"); break;
-		case 6: buttonEvent(5, "pushed"); statusEvent("Pushed 5 times"); break;
+		case 0: buttonEvent(1, "pushed"); statusEvent("Pushed once (physical)"); break;
+		case 1: buttonEvent(1, "released"); switchEvent("off"); statusEvent("Released (physical)"); break;
+		case 2: buttonEvent(1, "held"); switchEvent("on"); statusEvent("Held (physical)"); break;
+		case 3: buttonEvent(2, "pushed"); statusEvent("Pushed twice (physical)"); break;
+		case 4: buttonEvent(3, "pushed"); statusEvent("Pushed 3 times (physical)"); break;
+		case 5: buttonEvent(4, "pushed"); statusEvent("Pushed 4 times (physical)"); break;
+		case 6: buttonEvent(5, "pushed"); statusEvent("Pushed 5 times (physical)"); break;
 	}
 }
 
