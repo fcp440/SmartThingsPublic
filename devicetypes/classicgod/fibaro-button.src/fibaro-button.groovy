@@ -33,7 +33,7 @@ metadata {
 	tiles (scale: 2) {
 		multiAttributeTile(name:"FGB", type:"lighting", width:6, height:4, canChangeIcon: true) {
 			tileAttribute("device.button", key:"PRIMARY_CONTROL") {
-				attributeState("default", label:'PUSH', action: 'push1', backgroundColor:"#cc0000", icon: "st.unknown.zwave.remote-controller")
+				attributeState("default", label:'PUSH', action: 'push1', backgroundColor:"#cd1b11", icon: "st.unknown.zwave.remote-controller")
 			}
 			tileAttribute("device.multiStatus", key:"SECONDARY_CONTROL") {
 				attributeState("multiStatus", label:'${currentValue}')
@@ -41,20 +41,20 @@ metadata {
 		}
 
 		valueTile("push2", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", label:"PUSH\n2\nTIMES", action:"push2"
+			state "default", label:"", action:"push2", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-button.src/images/pb_red_x2.png"
 		}
 		valueTile("push3", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", label:"PUSH\n3\nTIMES", action:"push3"
+			state "default", label:"", action:"push3", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-button.src/images/pb_red_x3.png"
 		}
 		valueTile("push4", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", label:"PUSH\n4\nTIMES", action:"push4"
+			state "default", label:"", action:"push4", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-button.src/images/pb_red_x4.png"
 		}
 		valueTile("push5", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", label:"PUSH\n5\nTIMES", action:"push5"
+			state "default", label:"", action:"push5", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-button.src/images/pb_red_x5.png"
 		}
 		standardTile("switch", "device.switch", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "off", label:"HOLD", action:"on", backgroundColor:"#ffffff", icon: "st.contact.contact.closed"
-			state "on", label:"RELEASE", action:"off", backgroundColor:"#cc0000", icon: "st.contact.contact.open"
+			state "off", label:"", action:"on", backgroundColor:"#ffffff", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-button.src/images/pb_red_std.png"
+			state "on", label:"", action:"off", backgroundColor:"#cd1b11", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-button.src/images/pb_red_hold.png"
 		}
 
 		valueTile("battery", "device.battery", inactiveLabel: false, width: 2, height: 2, decoration: "flat", canChangeIcon: false) {
