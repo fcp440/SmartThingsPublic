@@ -31,7 +31,7 @@ metadata {
 	}
 
 	tiles (scale: 2) {
-		multiAttributeTile(name:"FGB", type:"lighting", width:6, height:4, canChangeIcon: true) {
+		multiAttributeTile(name:"FGB", type:"lighting", width:6, height:4) {
 			tileAttribute("device.button", key:"PRIMARY_CONTROL") {
 				attributeState("default", label:'', action: 'push1', backgroundColor:"#cd1b11", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-button.src/images/pb_red_std.png")
 			}
