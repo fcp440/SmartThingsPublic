@@ -31,16 +31,17 @@ metadata {
 	tiles (scale: 2) {
 		multiAttributeTile(name:"FGDW", type:"lighting", width:6, height:4) {
 			tileAttribute("device.contact", key:"PRIMARY_CONTROL") {
-				attributeState("open", label:"open", icon:"st.contact.contact.open", backgroundColor:"#e86d13")
-				attributeState("closed", label:"closed", icon:"st.contact.contact.closed", backgroundColor:"#00a0dc")
+				attributeState("open", label:"open", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-door-window-sensor-2.src/images/doors_open.png", backgroundColor:"#e86d13")
+				attributeState("closed", label:"closed", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-door-window-sensor-2.src/images/doors_close.png", backgroundColor:"#00a0dc")
 			}
 			tileAttribute("device.multiStatus", key:"SECONDARY_CONTROL") {
 				attributeState("multiStatus", label:'${currentValue}')
 			}
 		}
 		
-		valueTile("tamper", "device.tamper", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
-			state "tamper", label:'Tamper:\n ${currentValue}'
+		standardTile("tamper", "device.tamper", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
+			state "clear", label:'', icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-door-window-sensor-2.src/images/tamper_detector0.png"
+			state "detected", label:'', icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-door-window-sensor-2.src/images/tamper_detector100.png"
 		}
 		
 		valueTile("temperature", "device.temperature", inactiveLabel: false, width: 2, height: 2) {
@@ -62,9 +63,9 @@ metadata {
 		
 		standardTile("temperatureAlarm", "device.temperatureAlarm", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
 			state "default", label: "No temp. alarm", backgroundColor:"#ffffff"
-			state "clear", label:'', backgroundColor:"#ffffff", icon: "st.alarm.temperature.normal"
-			state "underheat", label:'underheat', backgroundColor:"#1e9cbb", icon: "st.alarm.temperature.freeze"
-			state "overheat", label:'overheat', backgroundColor:"#d04e00", icon: "st.alarm.temperature.overheat"
+			state "clear", label:'', backgroundColor:"#ffffff", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-door-window-sensor-2.src/images/heat_detector0.png"
+			state "underheat", label:'underheat', backgroundColor:"#1e9cbb", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-door-window-sensor-2.src/images/heat_detector1.png"
+			state "overheat", label:'overheat', backgroundColor:"#d04e00", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-door-window-sensor-2.src/images/heat_detector1.png"
 		}
 
 		main "FGDW"
