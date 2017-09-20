@@ -85,7 +85,7 @@ metadata {
 		
 		input (
 			title: "Wake up interval",
-			description: "How ofthen should your device automatically sync with the HUB. The lower the value, the shorter the battery life.\n0 or 1-18 (in hours)",
+			description: "How often should your device automatically sync with the HUB. The lower the value, the shorter the battery life.\n0 or 1-18 (in hours)",
 			type: "paragraph",
 			element: "paragraph"
 		)
@@ -412,7 +412,7 @@ private parameterMap() {[
 	[key: "tamperDelay", num: 30, size: 2, type: "number", def: 5, min: 0, max: 32400, title: "Tamper - alarm cancellation delay", 
 		descr: "Time period after which a tamper alarm will be cancelled.\n0-32400 - time in seconds"], 
 	[key: "tamperCancelation", num: 31, size: 1, type: "enum", options: [0: "Do not send tamper cancellation report", 1: "Send tamper cancellation report"], def: "1", title: "Tamper – reporting alarm cancellation", 
-		descr: "Reporting cancellation of tamper alarm to the controller and 3rd association group."],
+		descr: "Reporting cancellation of tamper alarm to the controller."],
 	[key: "temperatureMeasurement", num: 50, size: 2, type: "number", def: 300, min: 0, max: 32400, title: "Interval of temperature measurements", 
 		descr: "This parameter defines how often the temperature will be measured (specific time).\n0 - temperature measurements disabled\n5-32400 - time in seconds"], 
 	[key: "temperatureThreshold", num: 51, size: 2, type: "enum", options: [
