@@ -40,7 +40,8 @@ metadata {
 			}
 		}
 		standardTile("push1", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2, canChangeIcon: true) {
-			state "pushed", label:"PUSH", action:"push1", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-button.src/images/pb_red_std.png"
+			state "default", label:"PUSH", action:"push1", backgroundColor:"#00a0dc", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-button.src/images/pb_red_std.png"
+			state "pushed", label:"PUSH", action:"push1", backgroundColor:"#ffffff", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-button.src/images/pb_red_std.png"
 		}
 		standardTile("push2", "device.button", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
 			state "default", label:"", action:"push2", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-button.src/images/pb_red_x2.png"
