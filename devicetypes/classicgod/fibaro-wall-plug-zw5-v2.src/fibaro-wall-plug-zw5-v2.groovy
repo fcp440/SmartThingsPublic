@@ -28,16 +28,16 @@ metadata {
 		fingerprint mfr: "010F", prod: "0602"
 		fingerprint deviceId: "0x1001", inClusters:"0x5E,0x22,0x59,0x56,0x7A,0x32,0x71,0x73,0x98,0x31,0x85,0x70,0x72,0x5A,0x8E,0x25,0x86"
 		fingerprint deviceId: "0x1001", inClusters:"0x5E,0x22,0x59,0x56,0x7A,0x32,0x71,0x73,0x31,0x85,0x70,0x72,0x5A,0x8E,0x25,0x86"
-        
+		
 	}
 
 	tiles (scale: 2) {
 		multiAttributeTile(name:"switch", type: "lighting", width: 3, height: 4, canChangeIcon: true){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "off", label: 'Off', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff", nextState:"turningOn"
-				attributeState "on", label: 'On', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#00a0dc", nextState:"turningOff"
-				attributeState "turningOn", label:'Turning On', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#00a0dc", nextState:"turningOff"
-				attributeState "turningOff", label:'Turning Off', action:"switch.on", icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
+				attributeState "off", label: 'Off', action: "switch.on", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-wall-plug-zw5-v2.src/images/plug0.png", backgroundColor: "#ffffff", nextState:"turningOn"
+				attributeState "on", label: 'On', action: "switch.off", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-wall-plug-zw5-v2.src/images/plug2.png", backgroundColor: "#00a0dc", nextState:"turningOff"
+				attributeState "turningOn", label:'Turning On', action:"switch.off", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-wall-plug-zw5-v2.src/images/plug2.png", backgroundColor:"#00a0dc", nextState:"turningOff"
+				attributeState "turningOff", label:'Turning Off', action:"switch.on", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-wall-plug-zw5-v2.src/images/plug0.png", backgroundColor:"#ffffff", nextState:"turningOn"
 			}
 			tileAttribute("device.multiStatus", key:"SECONDARY_CONTROL") {
 				attributeState("multiStatus", label:'${currentValue}')
@@ -55,16 +55,16 @@ metadata {
 	}
 
 	preferences {
-    
+	
 		input (
 			title: "Fibaro Wall Plug manual",
-            description: "Tap to view the manual.",
-            image: "http://manuals.fibaro.com/wp-content/uploads/2017/02/wp_icon.png",
-            url: "http://manuals.fibaro.com/content/manuals/en/FGWPEF-102/FGWPEF-102-EN-A-v2.0.pdf",
+			description: "Tap to view the manual.",
+			image: "http://manuals.fibaro.com/wp-content/uploads/2017/02/wp_icon.png",
+			url: "http://manuals.fibaro.com/content/manuals/en/FGWPEF-102/FGWPEF-102-EN-A-v2.0.pdf",
 			type: "href",
 			element: "href"
 		)
-        
+		
 		parameterMap().each {
 			input (
 				title: "${it.num}. ${it.title}",
@@ -84,7 +84,7 @@ metadata {
 				required: false
 			)
 		}
-        
+		
 		input ( name: "logging", title: "Logging", type: "boolean", required: false )
 	}
 }
@@ -122,16 +122,16 @@ def updated() {
 
 	if (device.currentValue("numberOfButtons") != 6) { sendEvent(name: "numberOfButtons", value: 6) }
 	
-    state.lastUpdated = now()
-    syncStart()
+	state.lastUpdated = now()
+	syncStart()
 }
 
 private syncStart() {
 	boolean syncNeeded = false
-    Integer settingValue = null
+	Integer settingValue = null
 	parameterMap().each {
 		if(settings."$it.key" != null) {
-        	settingValue = settings."$it.key" as Integer
+			settingValue = settings."$it.key" as Integer
 			if (state."$it.key" == null) { state."$it.key" = [value: null, state: "synced"] } 
 			if (state."$it.key".value != settingValue || state."$it.key".state != "synced" ) {
 				state."$it.key".value = settingValue
@@ -288,7 +288,7 @@ def zwaveEvent(physicalgraph.zwave.commands.crc16encapv1.Crc16Encap cmd) {
 		logging("${device.displayName} - Parsed Crc16Encap into: ${encapsulatedCommand}")
 		zwaveEvent(encapsulatedCommand)
 	} else {
-        log.warn "Could not extract crc16 command from $cmd"
+		log.warn "Could not extract crc16 command from $cmd"
 	}
 }
 
@@ -342,21 +342,21 @@ private Map cmdVersions() {
 
 private parameterMap() {[
 	[key: "alwaysActive", num: 1, size: 1, type: "enum", options: [0: "0 - function inactive", 1: "1 - function activated"], def: "0", title: "Always On function", 
-    	descr: "Turns the Wall Plug into a power and energy meter. Wall Plug will turn on connected device permanently and will stop reacting to attempts of turning it off."],
+		descr: "Turns the Wall Plug into a power and energy meter. Wall Plug will turn on connected device permanently and will stop reacting to attempts of turning it off."],
 	[key: "restoreState", num: 2, size: 1, type: "enum", options: [0: "0 - device remains switched off", 1: "1 - device restores the state"], def: "1", title: "Restore state after power failure", 
-    	descr: "After the power supply is back on, the Wall Plug can be restored to previous state or remain switched off."],
+		descr: "After the power supply is back on, the Wall Plug can be restored to previous state or remain switched off."],
 	[key: "overloadSafety", num: 3, size: 2, type: "number", def: 0, min: 0, max: 30000 , title: "Overload safety switch", 
-    	descr: "Turn off the controlled device in case of exceeding the defined power.\n0 - function inactive\n10-30000 (1.0-3000.0W, step 0.1W)"],
+		descr: "Turn off the controlled device in case of exceeding the defined power.\n0 - function inactive\n10-30000 (1.0-3000.0W, step 0.1W)"],
 	[key: "immediatePowerReports", num: 10, size: 1, type: "number", def: 80, min: 1, max: 100, title: "High priority power reports", 
-    	descr: "Minimum percentage change in active power that will result in sending a high priority power report.\n1-99 - power change in percent\n100 - reports are disabled"],
+		descr: "Minimum percentage change in active power that will result in sending a high priority power report.\n1-99 - power change in percent\n100 - reports are disabled"],
 	[key: "standardPowerReports", num: 11, size: 1, type: "number", def: 15, min: 1, max: 100, title: "Standard power reports", 
-    	descr: "This parameter determines the minimum percentage change in active power that will result in sending a power report.\n1-99 - power change in percent\n100 - reports are disabled"], 
+		descr: "This parameter determines the minimum percentage change in active power that will result in sending a power report.\n1-99 - power change in percent\n100 - reports are disabled"], 
 	[key: "powerReportFrequency", num: 12, size: 2, type: "number", def: 30, min: 5, max: 600, title: "Power reporting interval", 
-    	descr: "Time interval of sending at most 5 standard power reports.\n5-600 (in seconds)"],
+		descr: "Time interval of sending at most 5 standard power reports.\n5-600 (in seconds)"],
 	[key: "energyReport", num: 13, size: 2, type: "number", def: 10, min: 0, max: 500, title: "Energy reports", 
-    	descr: "Minimum change in energy consumption that will result in sending a new report.\n0 - energy reports inactive\n1-500 (0.01-5kWh, step 0.01kWh)"], 
+		descr: "Minimum change in energy consumption that will result in sending a new report.\n0 - energy reports inactive\n1-500 (0.01-5kWh, step 0.01kWh)"], 
 	[key: "periodicReports", num: 14, size: 2, type: "number", def: 3600, min: 0, max: 32400, title: "Periodic power and energy reports", 
-    	descr: "Time period between independent reports.\n0 - periodic reports inactive\n5-32400 (in seconds)"], 
+		descr: "Time period between independent reports.\n0 - periodic reports inactive\n5-32400 (in seconds)"], 
 	[key: "ringColorOn", num: 41, size: 1, type: "enum", options: [
 		0: "0 - Off",
 		1: "1 - Load based - continuous", 
