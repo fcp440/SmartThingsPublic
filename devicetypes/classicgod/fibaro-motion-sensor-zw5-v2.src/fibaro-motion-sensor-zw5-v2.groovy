@@ -38,15 +38,16 @@ metadata {
 	tiles(scale: 2) {
 		multiAttributeTile(name:"FGMS", type:"lighting", width:6, height:4) {
 			tileAttribute("device.motion", key:"PRIMARY_CONTROL") {
-				attributeState("inactive", label:"no motion", icon:"st.motion.motion.inactive", backgroundColor:"#ffffff")
-				attributeState("active", label:"motion detected", icon:"st.motion.motion.active", backgroundColor:"#00a0dc")
+				attributeState("inactive", label:"no motion", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-motion-sensor-zw5-v2.src/images/motion0.png", backgroundColor:"#ffffff")
+				attributeState("active", label:"motion", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-motion-sensor-zw5-v2.src/images/motion1.png", backgroundColor:"#00a0dc")
 			}
-			tileAttribute("device.lastEvent", key:"SECONDARY_CONTROL") {
+			tileAttribute("device.multiStatus", key:"SECONDARY_CONTROL") {
 				attributeState("val", label:'${currentValue}')
 			}
 		}
-		valueTile("tamper", "device.tamper", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
-			state "val", label:'Tamper:\n${currentValue}'
+		standardTile("tamper", "device.tamper", inactiveLabel: false, width: 2, height: 2, decoration: "flat") {
+			state "clear", label:'', icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-motion-sensor-zw5-v2.src/images/tamper_detector0.png"
+			state "detected", label:'', icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-motion-sensor-zw5-v2.src/images/tamper_detector100.png"
 		}
 		valueTile("temperature", "device.temperature", inactiveLabel: false, width: 2, height: 2) {
 			state "temperature", label:'${currentValue}°',
@@ -117,13 +118,13 @@ def resetMotionTile() {
 // Event handlers and supporting functions
 def zwaveEvent(physicalgraph.zwave.commands.notificationv3.NotificationReport cmd) {
 	logging("${device.displayName} - NotificationReport received for ${cmd.event}, parameter value: ${cmd.eventParameter[0]}", "info")
-	def lastTime = new Date().format("yyyy MMM dd EEE HH:mm:ss", location.timeZone)
+	def lastTime = new Date().format("yyyy MMM dd EEE h:mm:ss a", location.timeZone)
 	if (cmd.notificationType == 7) {
 		if (cmd.event == 0) {
 			sendEvent(name: (cmd.eventParameter[0] == 3) ? "tamper" : "motion", value: (cmd.eventParameter[0] == 3) ? "clear" :"inactive")
 		} else {
 			sendEvent(name: (cmd.event == 3) ? "tamper" : "motion", value: (cmd.event == 3) ? "detected" : "active")
-			sendEvent(name: "lastEvent", value: (cmd.event == 3) ? "Tamper - $lastTime" : "Motion - $lastTime", displayed: false)
+			multiStatusEvent( (cmd.event == 3) ? "Tamper - $lastTime" : "Motion - $lastTime" )
 		}
 	}
 }
@@ -178,7 +179,7 @@ def updated() {
 	logging("${device.displayName} - Executing updated()","info")
 
 	if ( settings.tamperOperatingMode as Integer == 0 ) { 
-		resetMotionTile 
+		resetMotionTile()
 	} 
 	
 	syncStart()
