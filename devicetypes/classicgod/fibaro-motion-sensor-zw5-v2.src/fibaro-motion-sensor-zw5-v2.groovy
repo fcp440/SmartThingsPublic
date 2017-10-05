@@ -155,7 +155,7 @@ private motionEvent(Integer sensorType, value) {
 	def axisMap = [52: "yAxis", 53: "zAxis", 54: "xAxis"]
 	switch (sensorType) {
 		case 25:
-			sendEvent(name: "motionText", value: "Vibration:\n${value}", displayed: false)
+			sendEvent(name: "motionText", value: "Vibration:\n${value} MMI", displayed: false)
 			break
 		case 52..54:
 			sendEvent(name: axisMap[sensorType], value: value , displayed: false)
@@ -414,15 +414,15 @@ private parameterMap() {[
 		200: "Low sensitivity"
 		], def: 15, min: 8, max: 255, title: "Motion detection - sensitivity", descr: "The lower the value, the more sensitive the PIR sensor is."], 
 	[key: "motionBlindTime", num: 2, size: 1, type: "number", def: 15, min: 0, max: 15, title: "Motion detection - blind time", 
-		descr: "PIR sensor is “blind” (insensitive) to motion after last detection for the amount of time specified in this parameter."], 
+		descr: "PIR sensor is “blind” (insensitive) to motion after last detection for the amount of time specified in this parameter. (0.5-8 in sec.)"], 
 	[key: "motionCancelationDelay", num: 6, size: 2, type: "number", def: 30, min: 1, max: 32767, title: "Motion detection - alarm cancellation delay", 
-		descr: "Time period after which the motion alarm will be cancelled in the main controller and associated devices. (1-32767 sec.)"], 
+		descr: "Time period after which the motion alarm will be cancelled in the main controller. (1-32767 sec.)"], 
 	[key: "motionOperatingMode", num: 8, size: 1, type: "enum", options: [0: "Always Active (default)", 1: "Active During Day", 2: "Active During Night"], def: "0", title: "Motion detection - operating mode", 
 		descr: "This parameter determines in which part of day the PIR sensor will be active."], 
 	[key: "motionNightDay", num: 9, size: 2, type: "number", def: 200, min: 1, max: 32767, title: "Motion detection - night/day", 
 		descr: "This parameter defines the difference between night and day in terms of light intensity, used in parameter 8. (1-32767 lux)"], 
 	[key: "tamperCancelationDelay", num: 22, size: 2, type: "number", def: 30, min: 1, max: 32767, title: "Tamper - alarm cancellation delay", 
-		descr: "Time period after which a tamper alarm will be cancelled in the main controller and associated devices"], 
+		descr: "Time period after which a tamper alarm will be cancelled in the main controller. (1-32767 in sec.)"], 
 	[key: "tamperOperatingMode", num: 24, size: 1, type: "enum", options: [0: "tamper only (default)", 1: "tamper and earthquake detector", 2: "tamper and orientation"], def: "0", title: "Tamper - operating modes", 
 		descr: "This parameter determines function of the tamper and sent reports. It is an advanced feature serving much more functions than just detection of tampering."],
 	[key: "illuminanceThreshold", num: 40, size: 2, type: "number", def: 200, min: 0, max: 32767, title: "Illuminance report - threshold", 
@@ -471,5 +471,5 @@ private parameterMap() {[
 	[key: "ledLowBrightness", num: 82, size: 2, type: "number", def: 100, min: 0, max: 32767, title: "Visual LED indicator - illuminance for low indicator brightness", 
 		descr: "Light intensity level below which brightness of visual indicator is set to 1% (1-32767 lux)"], 
 	[key: "ledHighBrightness", num: 83, size: 2, type: "number", def: 1000, min: 0, max: 32767, title: "Visual LED indicator - illuminance for high indicator brightness", 
-		descr: "Light intensity level above which brightness of visual indicator is set to 100%"]
+		descr: "Light intensity level above which brightness of visual indicator is set to 100%. (value of parameter 82 to 32767 in lux)"]
 ]}
