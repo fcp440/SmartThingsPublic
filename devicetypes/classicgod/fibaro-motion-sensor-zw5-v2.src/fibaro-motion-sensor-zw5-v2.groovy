@@ -426,9 +426,9 @@ private parameterMap() {[
 	[key: "tamperOperatingMode", num: 24, size: 1, type: "enum", options: [0: "tamper only (default)", 1: "tamper and earthquake detector", 2: "tamper and orientation"], def: "0", title: "Tamper - operating modes", 
 		descr: "This parameter determines function of the tamper and sent reports. It is an advanced feature serving much more functions than just detection of tampering."],
 	[key: "illuminanceThreshold", num: 40, size: 2, type: "number", def: 200, min: 0, max: 32767, title: "Illuminance report - threshold", 
-		descr: "This parameter determines the change in light intensity level resulting in illuminance report being sent to the main controller."], 
+		descr: "This parameter determines the change in light intensity level (in lux) resulting in illuminance report being sent to the main controller."], 
 	[key: "illuminanceInterval", num: 42, size: 2, type: "number", def: 3600, min: 0, max: 32767, title: "Illuminance report - interval", 
-		descr: "Time interval between consecutive illuminance reports. The reports are sent even if there is no change in the light intensity."], 
+		descr: "Time interval between consecutive illuminance reports. The reports are sent even if there is no change in the light intensity. (1-3276 in sec)"], 
 	[key: "temperatureThreshold", num: 60, size: 2, type: "enum", options: [ 
 		3: "0.5°F/0.3°C",
 		6: "1°F/0.6°C",
