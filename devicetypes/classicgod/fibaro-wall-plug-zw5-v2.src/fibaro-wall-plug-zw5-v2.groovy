@@ -34,10 +34,8 @@ metadata {
 	tiles (scale: 2) {
 		multiAttributeTile(name:"switch", type: "lighting", width: 3, height: 4, canChangeIcon: true){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "off", label: 'Off', action: "switch.on", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-wall-plug-zw5-v2.src/images/plug0.png", backgroundColor: "#ffffff", nextState:"turningOn"
-				attributeState "on", label: 'On', action: "switch.off", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-wall-plug-zw5-v2.src/images/plug2.png", backgroundColor: "#00a0dc", nextState:"turningOff"
-				attributeState "turningOn", label:'Turning On', action:"switch.off", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-wall-plug-zw5-v2.src/images/plug2.png", backgroundColor:"#00a0dc", nextState:"turningOff"
-				attributeState "turningOff", label:'Turning Off', action:"switch.on", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-wall-plug-zw5-v2.src/images/plug0.png", backgroundColor:"#ffffff", nextState:"turningOn"
+				attributeState "off", label: 'Off', action: "switch.on", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-wall-plug-zw5-v2.src/images/plug0.png", backgroundColor: "#ffffff"
+				attributeState "on", label: 'On', action: "switch.off", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-wall-plug-zw5-v2.src/images/plug2.png", backgroundColor: "#00a0dc"
 			}
 			tileAttribute("device.multiStatus", key:"SECONDARY_CONTROL") {
 				attributeState("multiStatus", label:'${currentValue}')
@@ -346,15 +344,11 @@ private parameterMap() {[
 	[key: "restoreState", num: 2, size: 1, type: "enum", options: [0: "0 - device remains switched off", 1: "1 - device restores the state"], def: "1", title: "Restore state after power failure", 
 		descr: "After the power supply is back on, the Wall Plug can be restored to previous state or remain switched off."],
 	[key: "overloadSafety", num: 3, size: 2, type: "number", def: 0, min: 0, max: 30000 , title: "Overload safety switch", 
-		descr: "Turn off the controlled device in case of exceeding the defined power.\n0 - function inactive\n10-30000 (1.0-3000.0W, step 0.1W)"],
-	[key: "immediatePowerReports", num: 10, size: 1, type: "number", def: 80, min: 1, max: 100, title: "High priority power reports", 
-		descr: "Minimum percentage change in active power that will result in sending a high priority power report.\n1-99 - power change in percent\n100 - reports are disabled"],
+		descr: "Allows to turn off the controlled device in case of exceeding the defined power; 1-3000 W.\n0 - function inactive\n10-30000 (1.0-3000.0W, step 0.1W)"],
 	[key: "standardPowerReports", num: 11, size: 1, type: "number", def: 15, min: 1, max: 100, title: "Standard power reports", 
 		descr: "This parameter determines the minimum percentage change in active power that will result in sending a power report.\n1-99 - power change in percent\n100 - reports are disabled"], 
 	[key: "powerReportFrequency", num: 12, size: 2, type: "number", def: 30, min: 5, max: 600, title: "Power reporting interval", 
 		descr: "Time interval of sending at most 5 standard power reports.\n5-600 (in seconds)"],
-	[key: "energyReport", num: 13, size: 2, type: "number", def: 10, min: 0, max: 500, title: "Energy reports", 
-		descr: "Minimum change in energy consumption that will result in sending a new report.\n0 - energy reports inactive\n1-500 (0.01-5kWh, step 0.01kWh)"], 
 	[key: "periodicReports", num: 14, size: 2, type: "number", def: 3600, min: 0, max: 32400, title: "Periodic power and energy reports", 
 		descr: "Time period between independent reports.\n0 - periodic reports inactive\n5-32400 (in seconds)"], 
 	[key: "ringColorOn", num: 41, size: 1, type: "enum", options: [
@@ -368,7 +362,7 @@ private parameterMap() {[
 		7: "7 - Yellow", 
 		8: "8 - Cyan", 
 		9: "9 - Magenta"
-		], def: "1", title: "Ring LED color when on", descr: "Defines the illumination colour after turning on."],
+		], def: "1", title: "Ring LED color when on", descr: "Ring LED colour when the device is ON."],
 	[key: "ringColorOff", num: 42, size: 1, type: "enum", options: [
 		0: "0 - Off",
 		1: "1 - Last measured power",  
@@ -379,5 +373,5 @@ private parameterMap() {[
 		7: "7 - Yellow", 
 		8: "8 - Cyan", 
 		9: "9 - Magenta"
-		], def: "0", title: "Ring LED color when off", descr: "Defines the illumination colour after turning off."]
+		], def: "0", title: "Ring LED color when off", descr: "Ring LED colour when the device is OFF."]
 ]}
