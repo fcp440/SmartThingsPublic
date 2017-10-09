@@ -397,7 +397,6 @@ private parameterMap() {[
 		def: "0", title: "Z-Wave notifications", 
 		descr: "This parameter allows to set actions which result in sending notifications to the HUB"],
 	[key: "highTempTreshold", num: 22, size: 1, type: "enum", options: [
-		30: "test",
 		50: "130 °F / 50°C",
 		55: "140 °F / 55 °C",
 		65: "150 °F / 65 °C",
