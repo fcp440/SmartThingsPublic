@@ -30,7 +30,7 @@ metadata {
 	}
 
 	tiles (scale: 2) {
-		multiAttributeTile(name:"FGDW", type:"lighting", width:6, height:4) {
+		multiAttributeTile(name:"FGDW", type:"lighting", width:6, height:4, canChangeIcon: true) {
 			tileAttribute("device.carbonMonoxide", key:"PRIMARY_CONTROL") {
 				attributeState("clear", label:"clear", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-co-sensor.src/images/device_co_1.png", backgroundColor:"#ffffff")
 				attributeState("detected", label:"detected", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-co-sensor.src/images/device_co_3.png", backgroundColor:"#e86d13")
