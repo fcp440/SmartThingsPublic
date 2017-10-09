@@ -124,6 +124,14 @@ def updated() {
 	syncStart()
 }
 
+def configure() {
+	def cmds = []
+	cmds << zwave.meterV3.meterGet(scale: 0)
+	cmds << zwave.meterV3.meterGet(scale: 2)
+	cmds << zwave.basicV1.basicGet()
+	encapSequence(cmds,1000)
+}
+
 private syncStart() {
 	boolean syncNeeded = false
 	Integer settingValue = null
