@@ -134,6 +134,7 @@ def configure() {
 	sendEvent(name: "coLevel", unit: "ppm", value: 0, displayed: true)
 	cmds << zwave.batteryV1.batteryGet()
 	cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 1)
+	cmds << zwave.wakeUpV1.wakeUpNoMoreInformation()
 	encapSequence(cmds,1000)
 }
 
