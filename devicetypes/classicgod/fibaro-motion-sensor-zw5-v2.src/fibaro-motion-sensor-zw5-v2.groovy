@@ -413,7 +413,16 @@ private parameterMap() {[
 		100: "Medium sensitivity", 
 		200: "Low sensitivity"
 		], def: 15, min: 8, max: 255, title: "Motion detection - sensitivity", descr: "The lower the value, the more sensitive the PIR sensor is."], 
-	[key: "motionBlindTime", num: 2, size: 1, type: "number", def: 15, min: 0, max: 15, title: "Motion detection - blind time", 
+	[key: "motionBlindTime", num: 2, size: 1, type: "enum", options: [ 
+		1: "1 s",
+		3: "2 s",
+		5: "3 s",
+		7: "4 s",
+		9: "5 s",
+		11: "6 s",
+		13: "7 s",
+		15: "8 s"
+		], def: 15, min: 0, max: 15, title: "Motion detection - blind time", 
 		descr: "PIR sensor is “blind” (insensitive) to motion after last detection for the amount of time specified in this parameter. (0.5-8 in sec.)"], 
 	[key: "motionCancelationDelay", num: 6, size: 2, type: "number", def: 30, min: 1, max: 32767, title: "Motion detection - alarm cancellation delay", 
 		descr: "Time period after which the motion alarm will be cancelled in the main controller. (1-32767 sec.)"], 
