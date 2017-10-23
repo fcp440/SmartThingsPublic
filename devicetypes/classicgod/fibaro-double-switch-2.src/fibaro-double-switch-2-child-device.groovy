@@ -6,7 +6,7 @@
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *	  http://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
  *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
@@ -26,12 +26,10 @@ metadata {
 	}
 	
 	tiles {
-		multiAttributeTile(name:"switch", type: "lighting", width: 3, height: 4, canChangeIcon: true){
+		multiAttributeTile(name:"switch", type: "lighting", width: 3, height: 4){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "off", label: 'Off', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff", nextState:"turningOn"
-				attributeState "on", label: 'On', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#00a0dc", nextState:"turningOff"
-				attributeState "turningOn", label:'Turning On', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#00a0dc", nextState:"turningOff"
-				attributeState "turningOff", label:'Turning Off', action:"switch.on", icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
+				attributeState "off", label: '', action: "switch.on", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-double-switch-2.src/images/switch_2.png", backgroundColor: "#ffffff"
+				attributeState "on", label: '', action: "switch.off", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-double-switch-2.src/images/switch_1.png", backgroundColor: "#00a0dc"
 			}
 			tileAttribute("device.combinedMeter", key:"SECONDARY_CONTROL") {
 				attributeState("combinedMeter", label:'${currentValue}')
@@ -46,6 +44,12 @@ metadata {
 		valueTile("reset", "device.energy", decoration: "flat", width: 2, height: 2) {
 			state "reset", label:'reset\nkWh', action:"reset"
 		}
+		standardTile("main", "device.switch", decoration: "flat", canChangeIcon: true) {
+			state "off", label: 'off', action: "switch.on", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-double-switch-2.src/images/switch_2.png", backgroundColor: "#ffffff"
+			state "on", label: 'on', action: "switch.off", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-double-switch-2.src/images/switch_1.png", backgroundColor: "#00a0dc"
+		}
+		main "main"
+		details(["switch","power","energy","reset"])
 	}
 	
 	preferences {
@@ -68,4 +72,13 @@ def reset() {
 
 def refresh() {
 	parent.childRefresh()
+}
+
+def updated() {
+	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
+	
+	log.debug parent.state.s1scenesSent.value
+	
+	state.lastUpdated = now()
+
 }
