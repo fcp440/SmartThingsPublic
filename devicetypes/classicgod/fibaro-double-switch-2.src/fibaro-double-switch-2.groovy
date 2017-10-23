@@ -146,6 +146,7 @@ Integer getState(String key) {
 }
 
 //Configuration and synchronization
+
 def updated() {
 	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
 	def cmds = []
@@ -227,7 +228,7 @@ private syncCheck() {
 	} else if (notSynced) {
 		logging("${device.displayName} - Sync incomplete!","info")
 		sendEvent(name: "syncStatus", value: "incomplete")
-		multiStatusEvent("Sync incomplete! Wake up the device by pressing tamper button.", true, true)
+		multiStatusEvent("Sync incomplete!", true, true)
 	} else {
 		logging("${device.displayName} - Sync Complete","info")
 		sendEvent(name: "syncStatus", value: "synced")
@@ -314,7 +315,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null) {
 				sendEvent([name: "power", value: cmd.scaledMeterValue, unit: "W"])
 				break
 		}
-		multiStatusEvent("${device.currentValue("power")} W | ${device.currentValue("energy")} kWh")
+		multiStatusEvent("${(device.currentValue("power") ?: "0.0")} W | ${(device.currentValue("energy") ?: "0.00")} kWh")
 		
 	} else if (ep==2) {
 		switch (cmd.scale) {
@@ -325,7 +326,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd, ep=null) {
 				getChild(2)?.sendEvent([name: "power", value: cmd.scaledMeterValue, unit: "W"]) 
 				break
 		}
-		getChild(2)?.sendEvent([name: "combinedMeter", value: "${getChild(2)?.currentValue("power")} W / ${getChild(2)?.currentValue("energy")} kWh", displayed: false])
+		getChild(2)?.sendEvent([name: "combinedMeter", value: "${(getChild(2)?.currentValue("power") ?: "0.0")} W / ${(getChild(2)?.currentValue("energy") ?: "0.00")} kWh", displayed: false])
 	}
 }
 
@@ -492,11 +493,27 @@ private parameterMap() {[
 			0: "cancel and set target state", 
 			1: "no reaction", 
 			2: "reset timer"
-		], def: "0", title: "First channel - Restore state after power failure", 
+		], def: "0", title: "Reaction to switch for delay/auto ON/OFF modes", 
 		descr: "This parameter determines how the device in timed mode reacts to pushing the switch connected to the S1 terminal."],
 	[key: "ch1timeParameter", num: 12, size: 2, type: "number", def: 50, min: 0, max: 32000, title: "First channel - Time parameter for delay/auto ON/OFF modes", 
 		descr: "This parameter allows to set time parameter used in timed modes. (1-32000s)"],
-	[key: "ch1pulseTime", num: 13, size: 2, type: "number", def: 5, min: 1, max: 32000, title: "First channel - Pulse time for flashing mode", 
+	[key: "ch1pulseTime", num: 13, size: 2, type: "enum", options: [
+			1: "0.1 s",
+			5: "0.5 s",
+			10: "1 s",
+			20: "2 s",
+			30: "3 s",
+			40: "4 s",
+			50: "5 s",
+			60: "6 s",
+			70: "7 s",
+			80: "8 s",
+			90: "9 s",
+			100: "10 s",
+			300: "30 s",
+			600: "60 s",
+			6000: "600 s"
+		], def: 5, min: 1, max: 32000, title: "First channel - Pulse time for flashing mode", 
 		descr: "This parameter allows to set time of switching to opposite state in flashing mode. (0.1-3200.0s)"],
 	[key: "ch2operatingMode", num: 15, size: 1, type: "enum", options: [
 			0: "standard operation", 
@@ -514,9 +531,25 @@ private parameterMap() {[
 		], def: "0", title: "Second channel - Restore state after power failure", 
 		descr: "This parameter determines how the device in timed mode reacts to pushing the switch connected to the S2 terminal."],
 	[key: "ch2timeParameter", num: 17, size: 2, type: "number", def: 50, min: 0, max: 32000, title: "Second channel - Time parameter for delay/auto ON/OFF modes", 
-		descr: "This parameter allows to set time parameter used in timed modes. (1-32000s)"],
-	[key: "ch2pulseTime", num: 18, size: 2, type: "number", def: 5, min: 1, max: 32000, title: "Second channel - Pulse time for flashing mode", 
-		descr: "This parameter allows to set time of switching to opposite state in flashing mode. (0.1-3200.0s)"],
+		descr: "This parameter allows to set time parameter used in timed modes."],
+	[key: "ch2pulseTime", num: 18, size: 2, type: "enum", options: [
+			1: "0.1 s",
+			5: "0.5 s",
+			10: "1 s",
+			20: "2 s",
+			30: "3 s",
+			40: "4 s",
+			50: "5 s",
+			60: "6 s",
+			70: "7 s",
+			80: "8 s",
+			90: "9 s",
+			100: "10 s",
+			300: "30 s",
+			600: "60 s",
+			6000: "600 s"
+		], def: 5, min: 1, max: 32000, title: "Second channel - Pulse time for flashing mode", 
+		descr: "This parameter allows to set time of switching to opposite state in flashing mode."],
 	[key: "switchType", num: 20, size: 1, type: "enum", options: [
 			0: "momentary switch", 
 			1: "toggle switch (contact closed - ON, contact opened - OFF)", 
@@ -582,7 +615,7 @@ private parameterMap() {[
 			100: "1 kWh",
 			500: "5 kWh",
 			1000: "10 kWh"
-		], def: 100, min: 0, max: 32000, title: "Second channel - power reports", 
+		], def: 100, min: 0, max: 32000, title: "Second channel - energy reports", 
 		descr: "This parameter determines the min. change in consumed power that will result in sending power report"], 
 	[key: "periodicPowerReports", num: 58, size: 2, type: "enum", options: [
 			1: "1 s",
