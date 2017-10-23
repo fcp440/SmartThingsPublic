@@ -514,7 +514,7 @@ private parameterMap() {[
 			600: "60 s",
 			6000: "600 s"
 		], def: 5, min: 1, max: 32000, title: "First channel - Pulse time for flashing mode", 
-		descr: "This parameter allows to set time of switching to opposite state in flashing mode. (0.1-3200.0s)"],
+		descr: "This parameter allows to set time of switching to opposite state in flashing mode."],
 	[key: "ch2operatingMode", num: 15, size: 1, type: "enum", options: [
 			0: "standard operation", 
 			1: "delay ON", 
