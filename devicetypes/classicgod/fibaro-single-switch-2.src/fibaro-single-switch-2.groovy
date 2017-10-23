@@ -49,8 +49,8 @@ metadata {
 			state "reset", label:'reset\nkWh', action:"reset"
 		}
 		standardTile("main", "device.switch", decoration: "flat", canChangeIcon: true) {
-			state "off", label: '', action: "switch.on", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-double-switch-2.src/images/switch_2.png", backgroundColor: "#ffffff"
-			state "on", label: '', action: "switch.off", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-double-switch-2.src/images/switch_1.png", backgroundColor: "#00a0dc"
+			state "off", label: 'off', action: "switch.on", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-double-switch-2.src/images/switch_2.png", backgroundColor: "#ffffff"
+			state "on", label: 'on', action: "switch.off", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-double-switch-2.src/images/switch_1.png", backgroundColor: "#00a0dc"
 		}
 		main "main"
 		details(["switch","power","energy","reset"])
@@ -247,7 +247,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
 		case 0: sendEvent([name: "energy", value: cmd.scaledMeterValue, unit: "kWh"]); break;
 		case 2: sendEvent([name: "power", value: cmd.scaledMeterValue, unit: "W"]); break;
 	}
-	multiStatusEvent("${device.currentValue("power")} W / ${device.currentValue("energy")} kWh")
+	multiStatusEvent("${(device.currentValue("power") ?: "0.0")} W | ${(device.currentValue("energy") ?: "0.00")} kWh")
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.centralscenev1.CentralSceneNotification cmd) {
@@ -411,12 +411,28 @@ private parameterMap() {[
 			0: "cancel and set target state", 
 			1: "no reaction", 
 			2: "reset timer"
-		], def: "0", title: "First channel - Restore state after power failure", 
+		], def: "0", title: "Reaction to switch for delay/auto ON/OFF modes", 
 		descr: "This parameter determines how the device in timed mode reacts to pushing the switch connected to the S1 terminal."],
 	[key: "ch1timeParameter", num: 12, size: 2, type: "number", def: 50, min: 0, max: 32000, title: "Time parameter for delay/auto ON/OFF modes", 
 		descr: "This parameter allows to set time parameter used in timed modes. (1-32000s)"],
-	[key: "ch1pulseTime", num: 13, size: 2, type: "number", def: 5, min: 1, max: 32000, title: "Pulse time for flashing mode", 
-		descr: "This parameter allows to set time of switching to opposite state in flashing mode. (0.1-3200.0s)"],
+	[key: "ch1pulseTime", num: 13, size: 2, type: "enum", options: [
+			1: "0.1 s",
+			5: "0.5 s",
+			10: "1 s",
+			20: "2 s",
+			30: "3 s",
+			40: "4 s",
+			50: "5 s",
+			60: "6 s",
+			70: "7 s",
+			80: "8 s",
+			90: "9 s",
+			100: "10 s",
+			300: "30 s",
+			600: "60 s",
+			6000: "600 s"
+		], def: 5, min: 1, max: 32000, title: "First channel - Pulse time for flashing mode", 
+		descr: "This parameter allows to set time of switching to opposite state in flashing mode."],
 	[key: "switchType", num: 20, size: 1, type: "enum", options: [
 			0: "momentary switch", 
 			1: "toggle switch (contact closed - ON, contact opened - OFF)", 
