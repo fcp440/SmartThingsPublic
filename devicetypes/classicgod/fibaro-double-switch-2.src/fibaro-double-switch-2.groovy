@@ -228,7 +228,7 @@ private syncCheck() {
 	} else if (notSynced) {
 		logging("${device.displayName} - Sync incomplete!","info")
 		sendEvent(name: "syncStatus", value: "incomplete")
-		multiStatusEvent("Sync incomplete!", true, true)
+		multiStatusEvent("Sync incomplete! Open settings and tap Done to try again.", true, true)
 	} else {
 		logging("${device.displayName} - Sync Complete","info")
 		sendEvent(name: "syncStatus", value: "synced")
