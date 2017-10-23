@@ -73,12 +73,3 @@ def reset() {
 def refresh() {
 	parent.childRefresh()
 }
-
-def updated() {
-	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
-	
-	log.debug parent.state.s1scenesSent.value
-	
-	state.lastUpdated = now()
-
-}
