@@ -30,12 +30,10 @@ metadata {
 	}
 
 	tiles (scale: 2) {
-		multiAttributeTile(name:"switch", type: "lighting", width: 3, height: 4, canChangeIcon: true){
+		multiAttributeTile(name:"switch", type: "lighting", width: 3, height: 4){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "off", label: 'Off', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff", nextState:"turningOn"
-				attributeState "on", label: 'On', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#00a0dc", nextState:"turningOff"
-				attributeState "turningOn", label:'Turning On', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#00a0dc", nextState:"turningOff"
-				attributeState "turningOff", label:'Turning Off', action:"switch.on", icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
+				attributeState "off", label: '', action: "switch.on", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-double-switch-2.src/images/switch_2.png", backgroundColor: "#ffffff", nextState:"turningOn"
+				attributeState "on", label: '', action: "switch.off", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-double-switch-2.src/images/switch_1.png", backgroundColor: "#00a0dc", nextState:"turningOff"
 			}
 			tileAttribute("device.multiStatus", key:"SECONDARY_CONTROL") {
 				attributeState("multiStatus", label:'${currentValue}')
@@ -50,10 +48,16 @@ metadata {
 		valueTile("reset", "device.energy", decoration: "flat", width: 2, height: 2) {
 			state "reset", label:'reset\nkWh', action:"reset"
 		}
+		standardTile("main", "device.switch", decoration: "flat", canChangeIcon: true) {
+			state "off", label: '', action: "switch.on", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-double-switch-2.src/images/switch_2.png", backgroundColor: "#ffffff"
+			state "on", label: '', action: "switch.off", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-double-switch-2.src/images/switch_1.png", backgroundColor: "#00a0dc"
+		}
+		main "main"
+		details(["switch","power","energy","reset"])
 	}
 
 	preferences {
-    	input (
+		input (
 			title: "Fibaro Single Switch 2",
 			description: "Tap to view the manual.",
 			image: "http://manuals.fibaro.com/wp-content/uploads/2016/08/switch2_icon.jpg",
@@ -61,7 +65,7 @@ metadata {
 			type: "href",
 			element: "href"
 		)
-        
+		
 		parameterMap().each {
 			input (
 				title: "${it.num}. ${it.title}",
@@ -81,7 +85,7 @@ metadata {
 				required: false
 			)
 		}
-        
+		
 		input ( name: "logging", title: "Logging", type: "boolean", required: false )
 	}
 }
@@ -133,16 +137,16 @@ def updated() {
 
 	if (device.currentValue("numberOfButtons") != 6) { sendEvent(name: "numberOfButtons", value: 6) }
 	
-    state.lastUpdated = now()
-    syncStart()
+	state.lastUpdated = now()
+	syncStart()
 }
 
 private syncStart() {
 	boolean syncNeeded = false
-    Integer settingValue = null
+	Integer settingValue = null
 	parameterMap().each {
 		if(settings."$it.key" != null) {
-        	settingValue = settings."$it.key" as Integer
+			settingValue = settings."$it.key" as Integer
 			if (state."$it.key" == null) { state."$it.key" = [value: null, state: "synced"] } 
 			if (state."$it.key".value != settingValue || state."$it.key".state != "synced" ) {
 				state."$it.key".value = settingValue
@@ -243,7 +247,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
 		case 0: sendEvent([name: "energy", value: cmd.scaledMeterValue, unit: "kWh"]); break;
 		case 2: sendEvent([name: "power", value: cmd.scaledMeterValue, unit: "W"]); break;
 	}
-    multiStatusEvent("${device.currentValue("power")} W / ${device.currentValue("energy")} kWh")
+	multiStatusEvent("${device.currentValue("power")} W / ${device.currentValue("energy")} kWh")
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.centralscenev1.CentralSceneNotification cmd) {
@@ -389,78 +393,104 @@ private Map cmdVersions() {
 }
 
 private parameterMap() {[
-	[key: "restoreState", num: 9, size: 1, type: "enum", options: [0: "0 - power off after power failure", 1: "1 - restore state"], def: "1", title: "Restore state after power failure", 
-    	descr: "Determines if the device will return to state prior tothe power failure after power is restored"],
+	[key: "restoreState", num: 9, size: 1, type: "enum", options: [
+			0: "power off after power failure", 
+			1: "restore state"
+		], def: "1", title: "Restore state after power failure", 
+		descr: "This parameter determines if the device will return to state prior to the power failure after power is restored"],
 	[key: "ch1operatingMode", num: 10, size: 1, type: "enum", options: [
-			0: "0 - standard operation", 
-			1: "1 - delay ON", 
-			2: "2 - delay OFF", 
-			3: "3 - auto ON", 
-			4: "4 - auto OFF", 
-			5: "5 - flashing mode"
-		], def: "0", title: "Operating mode", descr: "Allows to choose operating mode for the 1st channel controlled by the S1 switch."],
-	[key: "ch1reactionToSwitch", num: 11, size: 1, type: "enum", options: [0: "0 - cancel and set target state", 1: "1 - no reaction", 2: "2 - reset timer"], def: "0", title: "Restore state after power failure", 
-    	descr: "Determines how the device in timed mode reacts to pushing the switch connected to the S1 terminal."],
+			0: "standard operation", 
+			1: "delay ON", 
+			2: "delay OFF", 
+			3: "auto ON", 
+			4: "auto OFF", 
+			5: "flashing mode"
+		], def: "0", title: "Operating mode", 
+		descr: "This parameter allows to choose operating for the 1st channel controlled by the S1 switch."],
+	[key: "ch1reactionToSwitch", num: 11, size: 1, type: "enum", options: [
+			0: "cancel and set target state", 
+			1: "no reaction", 
+			2: "reset timer"
+		], def: "0", title: "First channel - Restore state after power failure", 
+		descr: "This parameter determines how the device in timed mode reacts to pushing the switch connected to the S1 terminal."],
 	[key: "ch1timeParameter", num: 12, size: 2, type: "number", def: 50, min: 0, max: 32000, title: "Time parameter for delay/auto ON/OFF modes", 
-    	descr: "Allows to set time parameter used in timed modes."],
-	[key: "ch1pulseTime", num: 13, size: 2, type: "number", def: 5, min: 1, max: 32000, title: "Allows to set time of switching to opposite state in flashing mode.", 
-    	descr: null],
-	//[key: "ch2operatingMode", num: 15, size: 1, type: "enum", options: [
-	//		0: "0 - standard operation", 
-	//		1: "1 - delay ON", 
-	//		2: "2 - delay OFF", 
-	//		3: "3 - auto ON", 
-	//		4: "4 - auto OFF", 
-	//		5: "5 - flashing mode"
-	//	], def: "0", title: "Operating mode", descr: null],
-	//[key: "ch2reactionToSwitch", num: 16, size: 1, type: "enum", options: [0: "0 - cancel and set target state", 1: "1 - no reaction", 2: "2 - reset timer"], def: "0", title: "Restore state after power failure", descr: null],
-	//[key: "ch2timeParameter", num: 17, size: 2, type: "number", def: 50, min: 0, max: 32000, title: "Time parameter for delay/auto ON/OFF modes", descr: null],
-	//[key: "ch2pulseTime", num: 18, size: 2, type: "number", def: 5, min: 1, max: 32000, title: "Pulse time for flashing mode", descr: null],
-	[key: "switchType", num: 20, size: 1, type: "enum", options: [0: "0 - momentary switch", 1: "1 - toggle switch (contact closed - ON, contact opened - OFF)", 2: "2 - toggle switch (device changes status when switch changes status)"], def: "2", title: "Switch type", descr: null],
-	[key: "flashingReports", num: 21, size: 1, type: "enum", options: [0: "0 - do not send reports", 1: "1 - sends reports"], def: "0", title: "Flashing mode - reports", descr: null],
+		descr: "This parameter allows to set time parameter used in timed modes. (1-32000s)"],
+	[key: "ch1pulseTime", num: 13, size: 2, type: "number", def: 5, min: 1, max: 32000, title: "Pulse time for flashing mode", 
+		descr: "This parameter allows to set time of switching to opposite state in flashing mode. (0.1-3200.0s)"],
+	[key: "switchType", num: 20, size: 1, type: "enum", options: [
+			0: "momentary switch", 
+			1: "toggle switch (contact closed - ON, contact opened - OFF)", 
+			2: "toggle switch (device changes status when switch changes status)"
+		], def: "2", title: "Switch type", 
+		descr: "Parameter defines as what type the device should treat the switch connected to the S1 and S2 terminals"],
+	[key: "flashingReports", num: 21, size: 1, type: "enum", options: [
+			0: "do not send reports", 
+			1: "sends reports"
+		], def: "0", title: "Flashing mode - reports", 
+		descr: "This parameter allows to define if the device sends reports during the flashing mode."],
 	[key: "s1scenesSent", num: 28, size: 1, type: "enum", options: [
-			0: "0 - do not send scenes", 
-			1: "1 - key pressed 1 time", 
-			2: "2 - key pressed 2 times", 
-			3: "3 - key pressed 1 & 2 times", 
-			4: "4 - key pressed 3 times", 
-			5: "5 - key pressed 1 & 3 times", 
-			6: "6 - key pressed 2 & 3 times", 
-			7: "7 - key pressed 1, 2 & 3 times", 
-			8: "8 - key held & released", 
-			9: "9 - key Pressed 1 time & held", 
-			10: "10 - key pressed 2 times & held", 
-			11: "11 - key pressed 1, 2 times & held", 
-			12: "12 - key pressed 3 times & held", 
-			13: "13 - key pressed 1, 3 times & held", 
-			14: "14 - key pressed 2, 3 times & held", 
-			15: "15 - key pressed 1, 2, 3 times & held"
-		], def: "0", title: "Switch 1 - scenes sent", descr: null],
+			0: "do not send scenes", 
+			1: "key pressed 1 time", 
+			2: "key pressed 2 times", 
+			3: "key pressed 1 & 2 times", 
+			4: "key pressed 3 times", 
+			5: "key pressed 1 & 3 times", 
+			6: "key pressed 2 & 3 times", 
+			7: "key pressed 1, 2 & 3 times", 
+			8: "key held & released", 
+			9: "key Pressed 1 time & held", 
+			10: "key pressed 2 times & held", 
+			11: "key pressed 1, 2 times & held", 
+			12: "key pressed 3 times & held", 
+			13: "key pressed 1, 3 times & held", 
+			14: "key pressed 2, 3 times & held", 
+			15: "key pressed 1, 2, 3 times & held"
+		], def: "0", title: "Switch 1 - scenes sent", 
+		descr: "This parameter determines which actions result in sending scene IDs assigned to them."],
 	[key: "s2scenesSent", num: 29, size: 1, type: "enum", options: [
-			0: "0 - do not send scenes", 
-			1: "1 - key pressed 1 time", 
-			2: "2 - key pressed 2 times", 
-			3: "3 - key pressed 1 & 2 times", 
-			4: "4 - key pressed 3 times", 
-			5: "5 - key pressed 1 & 3 times", 
-			6: "6 - key pressed 2 & 3 times", 
-			7: "7 - key pressed 1, 2 & 3 times", 
-			8: "8 - key held & released", 
-			9: "9 - key Pressed 1 time & held", 
-			10: "10 - key pressed 2 times & held", 
-			11: "11 - key pressed 1, 2 times & held", 
-			12: "12 - key pressed 3 times & held", 
-			13: "13 - key pressed 1, 3 times & held", 
-			14: "14 - key pressed 2, 3 times & held", 
-			15: "15 - key pressed 1, 2, 3 times & held"
-		], def: "0", title: "Switch 2 - scenes sent", descr: null],
-	[key: "ch1powerReports", num: 50, size: 1, type: "number", def: 20, min: 0, max: 100, title: "Power reports", descr: null], 
-	[key: "ch1minimalTime", num: 51, size: 1, type: "number", def: 10, min: 0, max: 120, title: "Minimal time between power reports", descr: null], 
-	[key: "ch1energyReports", num: 53, size: 2, type: "number", def: 100, min: 0, max: 32000, title: "Energy reports", descr: null], 
-	//[key: "ch2powerReports", num: 54, size: 1, type: "number", def: 20, min: 0, max: 100, title: "Power reports", descr: null], 
-	//[key: "ch2minimalTime", num: 55, size: 1, type: "number", def: 10, min: 0, max: 120, title: "Minimal time between power reports", descr: null], 
-	//[key: "ch2energyReports", num: 57, size: 2, type: "number", def: 100, min: 0, max: 32000, title: "Energy reports", descr: null], 
-	[key: "periodicPowerReports", num: 58, size: 2, type: "number", def: 3600, min: 0, max: 32000, title: "Periodic power reports", descr: null], 
-	[key: "periodicEnergyReports", num: 59, size: 2, type: "number", def: 3600, min: 0, max: 32000, title: "Periodic energy reports", descr: null], 
-	[key: "deviceEnergyConsumed", num: 60, size: 1, type: "enum", options: [0: "0 - don't measure", 1: "1 - measure"], def: "0", title: "Energy consumed by the device itself", descr: null]
+			0: "do not send scenes", 
+			1: "key pressed 1 time", 
+			2: "key pressed 2 times", 
+			3: "key pressed 1 & 2 times", 
+			4: "key pressed 3 times", 
+			5: "key pressed 1 & 3 times", 
+			6: "key pressed 2 & 3 times", 
+			7: "key pressed 1, 2 & 3 times", 
+			8: "key held & released", 
+			9: "key Pressed 1 time & held", 
+			10: "key pressed 2 times & held", 
+			11: "key pressed 1, 2 times & held", 
+			12: "key pressed 3 times & held", 
+			13: "key pressed 1, 3 times & held", 
+			14: "key pressed 2, 3 times & held", 
+			15: "key pressed 1, 2, 3 times & held"
+		], def: "0", title: "Switch 2 - scenes sent", 
+		descr: "This parameter determines which actions result in sending scene IDs assigned to them."],
+	[key: "ch1energyReports", num: 53, size: 2, type: "enum", options: [
+			1: "0.01 kWh",
+			10: "0.1 kWh",
+			50: "0.5 kWh",
+			100: "1 kWh",
+			500: "5 kWh",
+			1000: "10 kWh"
+		], def: 100, min: 0, max: 32000, title: "Energy reports", 
+		descr: "This parameter determines the min. change in consumed power that will result in sending power report"], 
+	[key: "periodicPowerReports", num: 58, size: 2, type: "enum", options: [
+			1: "1 s",
+			5: "5 s",
+			10: "10 s",
+			600: "600 s",
+			3600: "3600 s",
+			32000: "32000 s"
+		], def: 3600, min: 0, max: 32000, title: "Periodic power reports", 
+		descr: "This parameter defines in what time interval the periodic power reports are sent"], 
+	[key: "periodicEnergyReports", num: 59, size: 2, type: "enum", options: [
+			1: "1 s",
+			5: "5 s",
+			10: "10 s",
+			600: "600 s",
+			3600: "3600 s",
+			32000: "32000 s"
+		], def: 3600, min: 0, max: 32000, title: "Periodic energy reports", 
+		descr: "This parameter determines in what time interval the periodic Energy reports are sent"]
 ]}
