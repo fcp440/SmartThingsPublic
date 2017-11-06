@@ -46,10 +46,10 @@ metadata {
 	tiles (scale: 2) {
 		multiAttributeTile(name:"switch", type: "lighting", width: 3, height: 4, canChangeIcon: true){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "off", label: 'Off', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff", nextState:"turningOn"
-				attributeState "on", label: 'On', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#00a0dc", nextState:"turningOff"
-				attributeState "turningOn", label:'Turning On', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#00a0dc", nextState:"turningOff"
-				attributeState "turningOff", label:'Turning Off', action:"switch.on", icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
+				attributeState "off", label: 'Off', action: "switch.on", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-rgbw-controller.src/images/rgbw.png", backgroundColor: "#ffffff", nextState:"turningOn"
+				attributeState "on", label: 'On', action: "switch.off", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-rgbw-controller.src/images/rgbw.png", backgroundColor: "#00a0dc", nextState:"turningOff"
+				attributeState "turningOn", label:'Turning On', action:"switch.off", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-rgbw-controller.src/images/rgbw.png", backgroundColor:"#00a0dc", nextState:"turningOff"
+				attributeState "turningOff", label:'Turning Off', action:"switch.on", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-rgbw-controller.src/images/rgbw.png", backgroundColor:"#ffffff", nextState:"turningOn"
 			}
 			tileAttribute("device.multiStatus", key:"SECONDARY_CONTROL") {
 				attributeState("multiStatus", label:'${currentValue}')
@@ -163,8 +163,6 @@ def stop() {
 	encapSequence(cmds)
 }
 
-def setEpLevel(ep, level) { encap(zwave.switchMultilevelV3.switchMultilevelSet(value: (level > 0) ? level-1 : 0),ep) }
-
 def setColor(value) {
 	logging("${device.displayName} - Executing setColor($value)","info")
 	def cmds = []
@@ -174,12 +172,10 @@ def setColor(value) {
 	if ( value.hex ) {
 		rgb = [r: Integer.parseInt(value.hex.substring(1,3),16), g: Integer.parseInt(value.hex.substring(3,5),16), b: Integer.parseInt(value.hex.substring(5,7),16)]
 	} else if ( value.red || value.green || value.blue ) {
-		log.debug "rgb"
 		rgb.r = (value.red) ?: 0
 		rgb.g = (value.green) ?: 0
 		rgb.b = (value.blue) ?: 0
 	} else {
-		log.debug "hue"
 		rgb = hueToRGB(value.hue as Float, value.saturation as Float)
 	}
 	
@@ -187,9 +183,7 @@ def setColor(value) {
 	if(value.hex) { sendEvent(name: "color", value: value.hex) }
 	if(value.saturation) { sendEvent(name: "saturation", value: value.saturation) }
 	
-	log.info "RGB: $rgb"
-	
-	encap(zwave.switchColorV3.switchColorSet(red: Math.round((rgb.r/100)*level), green: Math.round((rgb.g/100)*level), blue: Math.round((rgb.b/100)*level), warmWhite: 0))
+	encap(zwave.switchColorV3.switchColorSet(red: rgb.r, green: rgb.g, blue: rgb.b, warmWhite: 0))
 }
 
 def hueToRGB(Float hue, Float sat) {
@@ -214,11 +208,9 @@ def updated() {
 	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
 	def cmds = []
 	logging("${device.displayName} - Executing updated()","info")
-	
 
 	runIn(3,"syncStart")
 	state.lastUpdated = now()
-	//response(encapSequence(cmds,1000))
 }
 
 def configure() {
@@ -258,7 +250,6 @@ private syncNext() {
 	}
 	if (cmds) { 
 		runIn(10, "syncCheck")
-		log.debug "cmds!"
 		sendHubCommand(cmds,1000)
 	} else {
 		runIn(1, "syncCheck")
@@ -463,6 +454,5 @@ private Map cmdVersions() {
 }
 
 private parameterMap() {[
-	[key: "stepTime", num: 10, size: 2, type: "number", def: 10, min: 0, max: 60000 , title: "Time between steps", 
-		descr: ""]
+	[key: "stepTime", num: 10, size: 2, type: "number", def: 10, min: 0, max: 60000 , title: "Time between steps", descr: ""]
 ]}
