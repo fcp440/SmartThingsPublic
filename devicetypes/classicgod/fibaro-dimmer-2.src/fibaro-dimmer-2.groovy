@@ -36,7 +36,7 @@ metadata {
 	}
 
 	tiles (scale: 2) {
-		multiAttributeTile(name:"switch", type: "lighting", width: 3, height: 4, canChangeIcon: true){
+		multiAttributeTile(name:"switch", type: "lighting", width: 3, height: 4, canChangeIcon: false){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
 				attributeState "off", label: 'Off', action: "on", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-dimmer-2.src/images/dimmer0.png", backgroundColor: "#ffffff", nextState:"turningOn"
 				attributeState "on", label: 'On', action: "off", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-dimmer-2.src/images/dimmer100.png", backgroundColor: "#00a0dc", nextState:"turningOff"
@@ -440,12 +440,26 @@ private Map cmdVersions() {
 }
 
 private parameterMap() {[
-	[key: "autoStepTime", num: 6, size: 2, type: "number", def: 1, min: 0, max: 255 , title: " Automatic control - time of a dimming step", 
-		descr: "This parameter defines the time of single dimming step during the automatic control. (0-2.55s, in 10ms steps)"],
-	[key: "manualStepTime", num: 8, size: 2, type: "number", def: 5, min: 0, max: 255 , title: "Manual control - time of a dimming step", 
-		descr: "This parameter defines the time of single dimming step during the manual control. (0-2.55s, in 10ms steps)"],
+	[key: "autoStepTime", num: 6, size: 2, type: "enum", options: [
+		1: "10 ms",
+		2: "20 ms",
+		3: "30 ms",
+		4: "40 ms",
+		5: "50 ms",
+		10: "100 ms",
+		20: "200 ms"
+		], def: "1", min: 0, max: 255 , title: " Automatic control - time of a dimming step", descr: "This parameter defines the time of single dimming step during the automatic control."],
+	[key: "manualStepTime", num: 8, size: 2, type: "enum", options: [
+		1: "10 ms",
+		2: "20 ms",
+		3: "30 ms",
+		4: "40 ms",
+		5: "50 ms",
+		10: "100 ms",
+		20: "200 ms"
+		], def: "5", min: 0, max: 255 , title: "Manual control - time of a dimming step", descr: "This parameter defines the time of single dimming step during the manual control."],
 	[key: "autoOff", num: 10, size: 2, type: "number", def: 0, min: 0, max: 32767 , title: "Timer functionality (auto - off)", 
-		descr: "This parameter allows to automatically switch off the device after specified time from switching on the light source. It may be useful when the Dimmer 2 is installed in the stairway."],
+		descr: "This parameter allows to automatically switch off the device after specified time from switching on the light source. It may be useful when the Dimmer 2 is installed in the stairway. (1-32767 sec)"],
 	[key: "autoCalibration", num: 13, size: 1, type: "enum", options: [
 			0: "readout",
 			1: "force auto-calibration of the load without FIBARO Bypass 2",
@@ -463,12 +477,12 @@ private parameterMap() {[
 	[key: "sceneActivation", num: 28, size: 1, type: "enum", options: [
 			0: "disabled",
 			1: "enabled"
-		], def: "0", min: 0, max: 1 , title: ". Scene activation functionality", descr: "SCENE ID depends on the switch type configurations."],
+		], def: "0", min: 0, max: 1 , title: "Scene activation functionality", descr: "SCENE ID depends on the switch type configurations."],
 	[key: "loadControllMode", num: 30, size: 1, type: "enum", options: [
 			0: "forced leading edge control",
 			1: "forced trailing edge control",
 			2: "control mode selected automatically (based on auto-calibration)"
-		], def: "2", min: 0, max: 2 , title: "Load control mode", descr: "Switch no. 2 controls the Dimmer 2 additionally (in 3-way switch mode). Function disabled for parameter 20 set to 2 (roller blind switch)."],
+		], def: "2", min: 0, max: 2 , title: "Load control mode", descr: "This parameter allows to set the desired load control mode. The device automatically adjusts correct control mode, but the installer may force its change using this parameter."],
 	[key: "levelCorrection", num: 38, size: 2, type: "number", def: 255, min: 0, max: 255 , title: "Brightness level correction for flickering loads", 
-		descr: "Correction reduces spontaneous flickering of some capacitive load (e.g. dimmable LEDs) at certain brightness levels in 2-wire installation. In countries using ripple-control, correction may cause changes in brightness. In this case it is necessary to disable correction or adjust time of correction for flickering loads."]
+		descr: "Correction reduces spontaneous flickering of some capacitive load (e.g. dimmable LEDs) at certain brightness levels in 2-wire installation. In countries using ripple-control, correction may cause changes in brightness. In this case it is necessary to disable correction or adjust time of correction for flickering loads. (1-254 – duration of correction in seconds. For further information please see the manual)"]
 ]}
