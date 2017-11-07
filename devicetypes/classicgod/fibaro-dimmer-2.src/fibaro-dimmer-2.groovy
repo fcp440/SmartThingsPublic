@@ -73,10 +73,10 @@ metadata {
 
 	preferences {
 		input (
-			title: "Fibaro Double Switch 2",
+			title: "Fibaro Dimmer 2",
 			description: "Tap to view the manual.",
-			image: "http://manuals.fibaro.com/wp-content/uploads/2016/08/switch2_icon.jpg",
-			url: "http://manuals.fibaro.com/content/manuals/en/FGS-2x3/FGS-2x3-EN-T-v1.2.pdf",
+			image: "http://manuals.fibaro.com/wp-content/uploads/2017/02/d2_icon.png",
+			url: "http://manuals.fibaro.com/content/manuals/en/FGD-212/FGD-212-EN-T-v1.3.pdf",
 			type: "href",
 			element: "href"
 		)
