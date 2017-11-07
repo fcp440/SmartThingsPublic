@@ -31,6 +31,7 @@ metadata {
 		command "setRedLevel"
 		command "setGreenLevel"
 		command "setBlueLevel"
+		command "refresh"
 		
 		command "fireplace"
 		command "storm"
@@ -46,10 +47,10 @@ metadata {
 	tiles (scale: 2) {
 		multiAttributeTile(name:"switch", type: "lighting", width: 3, height: 4, canChangeIcon: true){
 			tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
-				attributeState "off", label: 'Off', action: "switch.on", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-rgbw-controller.src/images/rgbw.png", backgroundColor: "#ffffff", nextState:"turningOn"
-				attributeState "on", label: 'On', action: "switch.off", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-rgbw-controller.src/images/rgbw.png", backgroundColor: "#00a0dc", nextState:"turningOff"
-				attributeState "turningOn", label:'Turning On', action:"switch.off", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-rgbw-controller.src/images/rgbw.png", backgroundColor:"#00a0dc", nextState:"turningOff"
-				attributeState "turningOff", label:'Turning Off', action:"switch.on", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-rgbw-controller.src/images/rgbw.png", backgroundColor:"#ffffff", nextState:"turningOn"
+				attributeState "off", label: 'Off', action: "switch.on", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-rgbw-controller.src/images/rgbw_white.png", backgroundColor: "#ffffff", nextState:"turningOn"
+				attributeState "on", label: 'On', action: "switch.off", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-rgbw-controller.src/images/rgbw_white.png", backgroundColor: "#00a0dc", nextState:"turningOff"
+				attributeState "turningOn", label:'Turning On', action:"switch.off", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-rgbw-controller.src/images/rgbw_white.png", backgroundColor:"#00a0dc", nextState:"turningOff"
+				attributeState "turningOff", label:'Turning Off', action:"switch.on", icon:"https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-rgbw-controller.src/images/rgbw_white.png", backgroundColor:"#ffffff", nextState:"turningOn"
 			}
 			tileAttribute("device.multiStatus", key:"SECONDARY_CONTROL") {
 				attributeState("multiStatus", label:'${currentValue}')
@@ -62,7 +63,7 @@ metadata {
 			}
 		}
 		valueTile("power", "device.power", decoration: "flat", width: 2, height: 2) {
-			state "power", label:'${currentValue}\nW'
+			state "power", label:'${currentValue}\nW', action: "refresh"
 		}
 		controlTile("redLevel", "device.redLevel", "slider", range:"(0..100)", height: 1, width: 2) {
 			state "redLevel", action:"setRedLevel", backgroundColor:"#ff0000"
@@ -161,6 +162,11 @@ def stop() {
 	cmds << [zwave.switchMultilevelV3.switchMultilevelSet(value: (device.currentValue("blueLevel") > 0) ? device.currentValue("blueLevel")-1 : 0), 4]
 	cmds << [zwave.switchMultilevelV3.switchMultilevelSet(value: (device.currentValue("whiteLevel") > 0) ? device.currentValue("whiteLevel")-1 : 0), 5]
 	encapSequence(cmds)
+}
+
+def refresh() {
+	logging("${device.displayName} - Executing refresh()","info")
+	encap(zwave.sensorMultilevelV5.sensorMultilevelGet())
 }
 
 def setColor(value) {
@@ -281,7 +287,7 @@ private syncCheck() {
 	} else if (notSynced) {
 		logging("${device.displayName} - Sync incomplete!","info")
 		sendEvent(name: "syncStatus", value: "incomplete")
-		multiStatusEvent("Sync incomplete! Open settings and tap Done to try again.", true, true)
+		multiStatusEvent("Open settings and tap Done.", true, true)
 	} else {
 		logging("${device.displayName} - Sync Complete","info")
 		sendEvent(name: "syncStatus", value: "synced")
@@ -318,7 +324,7 @@ def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd) {
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.switchmultilevelv3.SwitchMultilevelReport cmd, ep=null) {
-	log.debug "switchmultilevelv3 ep: $ep $cmd "
+	logging("${device.displayName} - SwitchMultilevelReport received, $cmd","info")
 	def list = ["level","redLevel","greenLevel","blueLevel","whiteLevel"]
 	if (ep > 1) {
 		sendEvent(name: list[ep-1], value: (cmd.value > 0) ? cmd.value+1 : 0)
@@ -454,5 +460,5 @@ private Map cmdVersions() {
 }
 
 private parameterMap() {[
-	[key: "stepTime", num: 10, size: 2, type: "number", def: 10, min: 0, max: 60000 , title: "Time between steps", descr: ""]
+	[key: "stepTime", num: 10, size: 2, type: "number", def: 10, min: 0, max: 60000 , title: "Time between steps", descr: "(1-60000 ms)"]
 ]}
