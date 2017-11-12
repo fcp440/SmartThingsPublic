@@ -25,6 +25,7 @@ metadata {
 		command "reset"
 		command "refresh"
 		command "calibrate"
+		command "stop"
 		command "setPosition"
 		
 		attribute "position", "number"
@@ -39,8 +40,8 @@ metadata {
 				attributeState "unknown", label: 'Unknown', action: "calibrate", icon: "", backgroundColor: "#ffffff"
 				attributeState "closed", label: 'Closed', action: "open", icon: "st.doors.garage.garage-closed", backgroundColor: "#ffffff", nextState:"opening"
 				attributeState "open", label: 'Open', action: "close", icon: "st.doors.garage.garage-open", backgroundColor: "#00a0dc", nextState:"closing"
-				attributeState "opening", label: 'Opening', action: "close", icon: "st.doors.garage.garage-opening", backgroundColor: "#99d9f1", nextState:"closing"
-				attributeState "closing", label: 'Closing', action: "open", icon: "st.doors.garage.garage-closing", backgroundColor: "#99d9f1", nextState:"opening"
+				attributeState "opening", label: 'Opening', action: "stop", icon: "st.doors.garage.garage-opening", backgroundColor: "#99d9f1", nextState:"partially open"
+				attributeState "closing", label: 'Closing', action: "stop", icon: "st.doors.garage.garage-closing", backgroundColor: "#99d9f1", nextState:"partially open"
 				attributeState "partially open", label: 'Partially Open', action: "open", icon: "st.doors.garage.garage-open", backgroundColor: "#00a0dc", nextState:"opening"
 			}
 			tileAttribute("device.multiStatus", key:"SECONDARY_CONTROL") {
@@ -102,6 +103,13 @@ def open() { encap(zwave.basicV1.basicSet(value: 99)) }
 
 def close() { encap(zwave.basicV1.basicSet(value: 0)) }
 
+def stop() { 
+	def cmds = []
+	cmds << zwave.switchMultilevelV3.switchMultilevelStopLevelChange()
+	cmds << zwave.basicV1.basicGet()
+	encapSequence(cmds,1500)
+}
+
 def calibrate() { encap(zwave.configurationV2.configurationSet(configurationValue: intToParam(1, 1), parameterNumber: 29, size: 1)) }
 
 def setPosition(Integer value) {
@@ -121,7 +129,7 @@ def reset() {
 	cmds << zwave.meterV3.meterReset()
 	cmds << zwave.meterV3.meterGet(scale: 0)
 	cmds << zwave.meterV3.meterGet(scale: 2)
-	encapSequence(cmds,1000)
+	encapSequence(cmds,1500)
 }
 
 def refresh() {
@@ -130,7 +138,7 @@ def refresh() {
 	cmds << zwave.meterV3.meterGet(scale: 0)
 	cmds << zwave.meterV3.meterGet(scale: 2)
 	cmds << zwave.sensorMultilevelV5.sensorMultilevelGet()
-	encapSequence(cmds,1000)
+	encapSequence(cmds,1500)
 }
 
 def updated() {
@@ -237,7 +245,7 @@ def zwaveEvent(physicalgraph.zwave.commands.applicationstatusv1.ApplicationRejec
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd) {
-	logging("${device.displayName} - BasicReport received $cmd ep: $ep","info")
+	logging("${device.displayName} - BasicReport received $cmd","info")
 	switch (cmd.value as Integer) {
 		case 0: 
 			sendEvent(name: "windowShade", value: "closed"); 
@@ -255,8 +263,8 @@ def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd) {
 	sendEvent(name: "position", value: (((cmd.value > 99 ) ? 99 : cmd.value) > 0) ? cmd.value+1 : 0 , displayed: false) 
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinarySet cmd, ep=null) {
-	logging("${device.displayName} - SwitchBinarySet received $cmd ep: $ep","info")
+def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinarySet cmd) {
+	logging("${device.displayName} - SwitchBinarySet received $cmd","info")
 	switch (cmd.switchValue as Integer) {
 		case 0: 
 			sendEvent(name: "windowShade", value: "closing"); 
@@ -269,8 +277,8 @@ def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinarySet cmd, 
 	}
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.switchmultilevelv3.SwitchMultilevelStopLevelChange cmd, ep=null) {
-	logging("${device.displayName} - SwitchMultilevelStopLevelChange received {$cmd} ep: $ep","info")
+def zwaveEvent(physicalgraph.zwave.commands.switchmultilevelv3.SwitchMultilevelStopLevelChange cmd) {
+	logging("${device.displayName} - SwitchMultilevelStopLevelChange received {$cmd} ","info")
 	sendEvent(name: "windowShade", value: "partially open"); 
 	sendEvent(name: "garageDoorControl", value: "partially open", displayed: false); 
 	[response(encap(zwave.basicV1.basicGet()))]
@@ -285,7 +293,7 @@ def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelR
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
-	logging("${device.displayName} - MeterReport received, value: ${cmd.scaledMeterValue} scale: ${cmd.scale} ep: $ep","info")
+	logging("${device.displayName} - MeterReport received, value: ${cmd.scaledMeterValue} scale: ${cmd.scale}","info")
 	switch (cmd.scale) {
 		case 0:
 			sendEvent([name: "energy", value: cmd.scaledMeterValue, unit: "kWh"])
@@ -311,9 +319,7 @@ def parse(String description) {
 	} else if (description == "updated") {
 		return null
 	} else {
-		log.debug "bla1 $description"
 		def cmd = zwave.parse(description) 
-		log.debug "bla2"
 		if (cmd) {
 			logging("${device.displayName} - Parsed: ${cmd}")
 			zwaveEvent(cmd)
