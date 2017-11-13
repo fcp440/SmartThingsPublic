@@ -27,8 +27,10 @@ metadata {
 		command "calibrate"
 		command "stop"
 		command "setPosition"
+		command "setSlats"
 		
 		attribute "position", "number"
+		attribute "slats", "number"
 		
 		fingerprint mfr: "010F", prod: "0302"
 		fingerprint deviceId: "0x1106", inClusters: "0x8E,0x72,0x86,0x70,0x85,0x73,0x32,0x26,0x31,0x25,0x91,0x75"
@@ -37,12 +39,12 @@ metadata {
 	tiles (scale: 2) {
 		multiAttributeTile(name:"windowShade", type: "generic", width: 3, height: 4){
 			tileAttribute ("device.windowShade", key: "PRIMARY_CONTROL") {
-				attributeState "unknown", label: 'Unknown', action: "calibrate", icon: "", backgroundColor: "#ffffff"
-				attributeState "closed", label: 'Closed', action: "open", icon: "st.doors.garage.garage-closed", backgroundColor: "#ffffff", nextState:"opening"
-				attributeState "open", label: 'Open', action: "close", icon: "st.doors.garage.garage-open", backgroundColor: "#00a0dc", nextState:"closing"
-				attributeState "opening", label: 'Opening', action: "stop", icon: "st.doors.garage.garage-opening", backgroundColor: "#99d9f1", nextState:"partially open"
-				attributeState "closing", label: 'Closing', action: "stop", icon: "st.doors.garage.garage-closing", backgroundColor: "#99d9f1", nextState:"partially open"
-				attributeState "partially open", label: 'Partially Open', action: "open", icon: "st.doors.garage.garage-open", backgroundColor: "#00a0dc", nextState:"opening"
+				attributeState "unknown", label: 'Unknown', action: "calibrate", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-roller-shutter-2.src/images/Roleta50.png", backgroundColor: "#ffffff"
+				attributeState "closed", label: 'Closed', action: "open", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-roller-shutter-2.src/images/Roleta100.png", backgroundColor: "#ffffff", nextState:"opening"
+				attributeState "open", label: 'Open', action: "close", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-roller-shutter-2.src/images/Roleta0.png", backgroundColor: "#00a0dc", nextState:"closing"
+				attributeState "opening", label: 'Opening', action: "stop", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-roller-shutter-2.src/images/Roleta50.png", backgroundColor: "#99d9f1", nextState:"partially open"
+				attributeState "closing", label: 'Closing', action: "stop", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-roller-shutter-2.src/images/Roleta50.png", backgroundColor: "#99d9f1", nextState:"partially open"
+				attributeState "partially open", label: 'Partially Open', action: "open", icon: "https://raw.githubusercontent.com/ClassicGOD/SmartThingsPublic/master/devicetypes/classicgod/fibaro-roller-shutter-2.src/images/Roleta50.png", backgroundColor: "#00a0dc", nextState:"opening"
 			}
 			tileAttribute("device.multiStatus", key:"SECONDARY_CONTROL") {
 				attributeState("multiStatus", label:'${currentValue}')
@@ -62,6 +64,12 @@ metadata {
 		}
 		valueTile("calibrate", "device.calibrate", decoration: "flat", width: 2, height: 1) {
 			state "calibrate", label:'Calibrate', action:"calibrate"
+		}
+		valueTile("slatsText", "device.slats", decoration: "flat", width: 2, height: 1) {
+			state "slats", label:'Slats:'
+		}
+		controlTile("slats", "device.slats", "slider", range:"(0..100)", height: 1, width: 2) {
+			state "slats", label:'slats', action:"setSlats"
 		}
 	}
 
@@ -99,16 +107,11 @@ metadata {
 	}
 }
 
-def open() { encap(zwave.basicV1.basicSet(value: 99)) }
+def open() { setFibaro(99,99) }
 
-def close() { encap(zwave.basicV1.basicSet(value: 0)) }
+def close() { setFibaro(0,0) }
 
-def stop() { 
-	def cmds = []
-	cmds << zwave.switchMultilevelV3.switchMultilevelStopLevelChange()
-	cmds << zwave.basicV1.basicGet()
-	encapSequence(cmds,1500)
-}
+def stop() { encap(zwave.switchMultilevelV3.switchMultilevelStopLevelChange()) }
 
 def calibrate() { encap(zwave.configurationV2.configurationSet(configurationValue: intToParam(1, 1), parameterNumber: 29, size: 1)) }
 
@@ -120,8 +123,21 @@ def setPosition(Integer value) {
 		sendEvent(name: "windowShade", value: "opening"); 
 		sendEvent(name: "garageDoorControl", value: "opening"); 
 	}
-	sendEvent(name: "position", value: value); 
-	encap(zwave.basicV1.basicSet(value: (value > 0) ? value-1 : 0))
+	setFibaro((value > 0) ? value-1 : 0, null)
+}
+
+def setSlats(Integer value) {
+	setFibaro(null, (value > 0) ? value-1 : 0)
+}
+
+def setFibaro(Integer position = null, Integer slats = null) {
+	if ( position != null && slats != null ) {
+		return "91010f260103${Integer.toHexString(position).padLeft(2,'0')}${Integer.toHexString(slats).padLeft(2,'0')}"
+	} else if ( position != null ) {
+		return "91010f260102${Integer.toHexString(position).padLeft(2,'0')}00"
+	} else if ( slats != null ) {
+		return "91010f26010100${Integer.toHexString(slats).padLeft(2,'0')}"
+	}
 }
 
 def reset() {
@@ -144,9 +160,21 @@ def refresh() {
 def updated() {
 	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
 	def cmds = []
+	
+	cmds << zwave.associationV2.associationGet(groupingIdentifier: 3) //verify if group 3 association is correct
+	cmds << zwave.configurationV2.configurationGet(parameterNumber: 3) //verify if param 3 value is correct
+	
 	logging("${device.displayName} - Executing updated()","info")
 	runIn(3,"syncStart")
 	state.lastUpdated = now()
+	response(encapSequence(cmds,1000))
+}
+
+def configure() {
+	def cmds = []
+	cmds << zwave.associationV2.associationSet(groupingIdentifier: 3, nodeId: zwaveHubNodeId)
+	cmds << zwave.configurationV2.configurationSet(configurationValue: intToParam(1, 1), parameterNumber: 3, size: 1)
+	encapSequence(cmds, 1000)
 }
 
 private syncStart() {
@@ -228,10 +256,17 @@ private multiStatusEvent(String statusValue, boolean force = false, boolean disp
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.configurationv2.ConfigurationReport cmd) {
-	def paramKey = parameterMap().find( {it.num == cmd.parameterNumber } ).key
-	logging("${device.displayName} - Parameter ${paramKey} value is ${cmd.scaledConfigurationValue} expected " + state."$paramKey".value, "info")
-	state."$paramKey".state = (state."$paramKey".value == cmd.scaledConfigurationValue) ? "synced" : "incorrect"
-	syncNext()
+	if (cmd.parameterNumber != 3) {
+		def paramKey = parameterMap().find( {it.num == cmd.parameterNumber } ).key
+		logging("${device.displayName} - Parameter ${paramKey} value is ${cmd.scaledConfigurationValue} expected " + state."$paramKey".value, "info")
+		state."$paramKey".state = (state."$paramKey".value == cmd.scaledConfigurationValue) ? "synced" : "incorrect"
+		syncNext()
+	} else {
+		logging("${device.displayName} - Parameter 3 value is ${cmd.scaledConfigurationValue} expected 1", "info")
+		if ( cmd.scaledConfigurationValue != 1 ) {
+			sendHubCommand(response(encap(zwave.configurationV2.configurationSet(configurationValue: intToParam(1, 1), parameterNumber: 3, size: 1))))
+		}
+	}
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.applicationstatusv1.ApplicationRejectedRequest cmd) {
@@ -244,44 +279,33 @@ def zwaveEvent(physicalgraph.zwave.commands.applicationstatusv1.ApplicationRejec
 	}
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd) {
-	logging("${device.displayName} - BasicReport received $cmd","info")
-	switch (cmd.value as Integer) {
-		case 0: 
-			sendEvent(name: "windowShade", value: "closed"); 
-			sendEvent(name: "garageDoorControl", value: "closed", displayed: false); 
-			break;
-		case 99..255: 
-			sendEvent(name: "windowShade", value: "open"); 
-			sendEvent(name: "garageDoorControl", value: "open", displayed: false); 
-			break;
-		default:
-			sendEvent(name: "windowShade", value: "partially open"); 
-			sendEvent(name: "garageDoorControl", value: "partially open", displayed: false); 
-			break;
+def zwaveEvent(physicalgraph.zwave.commands.associationv2.AssociationReport cmd) {
+	def cmds = []
+	if (cmd.groupingIdentifier == 3) {
+		if (cmd.nodeId != [zwaveHubNodeId]) {
+			log.debug "${device.displayName} - incorrect Association for Group 3! nodeId: ${cmd.nodeId} will be changed to [${zwaveHubNodeId}]"
+			cmds << zwave.associationV2.associationRemove(groupingIdentifier: 3)
+			cmds << zwave.associationV2.associationSet(groupingIdentifier: 3, nodeId: zwaveHubNodeId)
+		} else {
+			logging("${device.displayName} - Association for Group 3 correct.","info")
+		}
 	}
-	sendEvent(name: "position", value: (((cmd.value > 99 ) ? 99 : cmd.value) > 0) ? cmd.value+1 : 0 , displayed: false) 
+	if (cmds) { [response(encapSequence(cmds, 1000))] }
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd) {
+	logging("${device.displayName} - BasicReport received, ignoring $cmd","info")
+	//ignore
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinarySet cmd) {
-	logging("${device.displayName} - SwitchBinarySet received $cmd","info")
-	switch (cmd.switchValue as Integer) {
-		case 0: 
-			sendEvent(name: "windowShade", value: "closing"); 
-			sendEvent(name: "garageDoorControl", value: "closing", displayed: false);
-			break;
-		case 255: 
-			sendEvent(name: "windowShade", value: "opening"); 
-			sendEvent(name: "garageDoorControl", value: "opening", displayed: false); 
-			break;
-	}
+	logging("${device.displayName} - SwitchBinarySet received, ignoring $cmd","info")
+	//ignore
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.switchmultilevelv3.SwitchMultilevelStopLevelChange cmd) {
-	logging("${device.displayName} - SwitchMultilevelStopLevelChange received {$cmd} ","info")
-	sendEvent(name: "windowShade", value: "partially open"); 
-	sendEvent(name: "garageDoorControl", value: "partially open", displayed: false); 
-	[response(encap(zwave.basicV1.basicGet()))]
+	logging("${device.displayName} - SwitchMultilevelStopLevelChange received, ignoring {$cmd} ","info")
+	//ignore
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelReport cmd) {
@@ -319,11 +343,53 @@ def parse(String description) {
 	} else if (description == "updated") {
 		return null
 	} else {
-		def cmd = zwave.parse(description) 
-		if (cmd) {
-			logging("${device.displayName} - Parsed: ${cmd}")
-			zwaveEvent(cmd)
+		def map = descriptionToMap(description)
+		if (map?.command == "9101") {
+			parseFibaro(map)
+		} else {
+			def cmd = zwave.parse(description) 
+			if (cmd) {
+				logging("${device.displayName} - Parsed: ${cmd}")
+				zwaveEvent(cmd)
+			}
 		}
+	}
+}
+
+def descriptionToMap(String description) {
+	def result = description.split(',').collectEntries { [(it.split(':')[0].trim()): it.split(':')[1].trim()] }
+}
+
+def parseFibaro(map) {
+	logging("${device.displayName} - Parsing Fibaro Proprietary command: ${map}")
+	def payload = map.payload.split(" ")
+	Integer val1 = Integer.parseInt(payload[4], 16)
+	Integer val2 = Integer.parseInt(payload[5], 16)
+	switch (payload[3]) {
+		case "01":
+			if (val2 <= 99) { sendEvent(name: "slats", value: (val2 > 0) ? val2+1 : 0 , displayed: false) }
+			break
+		case "02":
+			if (val1 <= 99) { sendEvent(name: "position", value: (val1 > 0) ? val1+1 : 0 , displayed: false) }
+			break
+		case "03":
+			if (val2 <= 99) { sendEvent(name: "slats", value: (val2 > 0) ? val2+1 : 0 , displayed: false) }
+			if (val1 <= 99) { sendEvent(name: "position", value: (val1 > 0) ? val1+1 : 0 , displayed: false) }
+			break
+	}
+	switch (val1) {
+		case 0: 
+			sendEvent(name: "windowShade", value: "closed"); 
+			sendEvent(name: "garageDoorControl", value: "closed", displayed: false); 
+			break;
+		case 99..255: 
+			sendEvent(name: "windowShade", value: "open"); 
+			sendEvent(name: "garageDoorControl", value: "open", displayed: false); 
+			break;
+		default:
+			sendEvent(name: "windowShade", value: "partially open"); 
+			sendEvent(name: "garageDoorControl", value: "partially open", displayed: false); 
+			break;
 	}
 }
 
@@ -403,7 +469,7 @@ private parameterMap() {[
 		], def: "1", title: "Roller Shutter operating modes", 
 		descr: ""],
 	[key: "modeTimer", num: 12, size: 2, type: "number", def: 150, min: 0, max: 65535 , title: "In Venetian Blind mode (parameter 10 set to 2) the parameter determines time of full turn of the slats.", 
-		descr: "In Gate Mode (parameter 10 set to 3 or 4) the parameter defines the COUNTDOWN time, i.e. the time period after which an open gate starts closing. In any other operating mode the parameter value is irrelevant. Value of 0 means the gate will not close automatically. To calculate the value of parameter based on time, multiply the time  in sec by 100 for example: 1.5 s x 100 = 150 Where: 1.5 – the time of full turn of the slats; 150 - value of parameter"],
+		descr: "In Gate Mode (parameter 10 set to 3 or 4) the parameter defines the COUNTDOWN time, i.e. the time period after which an open gate starts closing. In any other operating mode the parameter value is irrelevant. Value of 0 means the gate will not close automatically. To calculate the value of parameter based on time, multiply the time in sec by 100 for example: 1.5 s x 100 = 150 Where: 1.5 – the time of full turn of the slats; 150 - value of parameter"],
 	[key: "switchType", num: 14, size: 1, type: "enum", options: [
 			0: "Momentary switches",
 			1: "Toggle switches",
