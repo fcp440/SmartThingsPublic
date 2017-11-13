@@ -52,13 +52,13 @@ metadata {
 			}
 		}
 		valueTile("power", "device.power", decoration: "flat", width: 2, height: 2) {
-			state "power", label:'${currentValue}\n W', action:"refresh"
+			state "power", label:'${currentValue}\nW', action:"refresh"
 		}
 		valueTile("energy", "device.energy", decoration: "flat", width: 2, height: 2) {
-			state "energy", label:'${currentValue}\n kWh', action:"refresh"
+			state "energy", label:'${currentValue}\nkWh', action:"refresh"
 		}
 		valueTile("reset", "device.energy", decoration: "flat", width: 2, height: 2) {
-			state "reset", label:'reset\n kWh', action:"reset"
+			state "reset", label:'reset\nkWh', action:"reset"
 		}
 		valueTile("calibrate", "device.calibrate", decoration: "flat", width: 2, height: 1) {
 			state "calibrate", label:'Calibrate', action:"calibrate"
@@ -395,15 +395,15 @@ private Map cmdVersions() {
 
 private parameterMap() {[
 	[key: "operatingMode", num: 10, size: 1, type: "enum", options: [
-			0: "Roller Blind Mode, without positioning",
-			1: "Roller Blind Mode, with positioning",
-			2: "Venetian Blind Mode, with positioning",
-			3: "Gate Mode, without positioning",
-			4: "Gate Mode, with positioning"
+			0: "0 - Roller Blind Mode, without positioning",
+			1: "1 - Roller Blind Mode, with positioning",
+			2: "2 - Venetian Blind Mode, with positioning",
+			3: "3 - Gate Mode, without positioning",
+			4: "4 - Gate Mode, with positioning"
 		], def: "1", title: "Roller Shutter operating modes", 
 		descr: ""],
 	[key: "modeTimer", num: 12, size: 2, type: "number", def: 150, min: 0, max: 65535 , title: "In Venetian Blind mode (parameter 10 set to 2) the parameter determines time of full turn of the slats.", 
-		descr: "In Gate Mode (parameter 10 set to 3 or 4) the parameter defines the COUNTDOWN time, i.e. the time period after which an open gate starts closing. In any other operating mode the parameter value is irrelevant. Value of 0 means the gate will not close automatically"],
+		descr: "In Gate Mode (parameter 10 set to 3 or 4) the parameter defines the COUNTDOWN time, i.e. the time period after which an open gate starts closing. In any other operating mode the parameter value is irrelevant. Value of 0 means the gate will not close automatically. To calculate the value of parameter based on time, multiply the time  in sec by 100 for example: 1.5 s x 100 = 150 Where: 1.5 – the time of full turn of the slats; 150 - value of parameter"],
 	[key: "switchType", num: 14, size: 1, type: "enum", options: [
 			0: "Momentary switches",
 			1: "Toggle switches",
@@ -411,5 +411,5 @@ private parameterMap() {[
 		], def: "0", title: "Switch type", 
 		descr: "The parameter settings are relevant for Roller Blind Mode and Venetian Blind Mode (parameter 10 set to 0, 1, 2)."],
 	[key: "motorTreshold", num: 18, size: 1, type: "number", def: 10, min: 0, max: 255 , title: "Motor operation detection", 
-		descr: "Power threshold to be interpreted as reaching a limit switch."],
+		descr: "Power threshold to be interpreted as reaching a limit switch. (1-255 W)"],
 	]}
