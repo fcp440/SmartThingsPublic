@@ -15,18 +15,15 @@
  */
 metadata {
 	definition (name: "Fibaro Heat Controller", namespace: "ClassicGOD", author: "Artur Draga") {
+		capability "Thermostat"
+		capability "Temperature Measurement"
 		
-        capability "Thermostat"
-
-		command "test"
-        command "test2"
-        
-        command "tempUp"
-        command "tempDown"
-        command "refreshBattery"
-        command "refreshMode"
-        command "refreshParam3"
-        
+		command "tempUp"
+		command "tempDown"
+		command "refreshBattery"
+		command "refreshMode"
+		command "resetNotification"
+		
 		fingerprint mfr: "010F", prod: "1301"
 		fingerprint deviceId: "0x0806", inClusters:"0x5E,0x98,0x9F,0x55,0x56,0x6C,0x22,0x86,0x8E,0x31,0x40,0x43,0x53,0x59,0x5A,0x7A,0x60,0x71,0x72,0x75,0x80,0x70,0x81,0x73,0x85"
 		fingerprint deviceId: "0x0806", inClusters:"0x5E,0x9F,0x55,0x56,0x6C,0x22,0x86,0x8E,0x31,0x40,0x43,0x53,0x59,0x5A,0x7A,0x60,0x71,0x72,0x75,0x80,0x70,0x81,0x73,0x85"
@@ -34,48 +31,45 @@ metadata {
 
 	tiles (scale: 2) {
 		multiAttributeTile(name:"thermostatFull", type:"thermostat", width:6, height:4) {
-            tileAttribute("device.thermostatSetpoint", key: "PRIMARY_CONTROL") {
-                attributeState("temp", label:'${currentValue}', unit:"dF", defaultState: true)
-            }
-            tileAttribute("device.control", key: "VALUE_CONTROL") {
-                attributeState("VALUE_UP", action: "tempUp")
-                attributeState("VALUE_DOWN", action: "tempDown")
-            }
-            tileAttribute("device.multiStatus", key: "SECONDARY_CONTROL") {
-                attributeState("multiStatus", label:'${currentValue}')
-            }
-            tileAttribute("device.thermostatMode", key: "OPERATING_STATE") {
-                attributeState("off", backgroundColor:"#ffffff")
-                attributeState("heat", backgroundColor:"#e86d13")
-                attributeState("auto", backgroundColor:"#00a0dc")
-            }
-        }
-        
+			tileAttribute("device.thermostatSetpoint", key: "PRIMARY_CONTROL") {
+				attributeState("temp", label:'${currentValue}', unit:"dF", defaultState: true)
+			}
+			tileAttribute("device.control", key: "VALUE_CONTROL") {
+				attributeState("VALUE_UP", action: "tempUp")
+				attributeState("VALUE_DOWN", action: "tempDown")
+			}
+			tileAttribute("device.multiStatus", key: "SECONDARY_CONTROL") {
+				attributeState("multiStatus", label:'${currentValue}')
+			}
+			tileAttribute("device.thermostatMode", key: "OPERATING_STATE") {
+				attributeState("off", backgroundColor:"#ffffff")
+				attributeState("heat", backgroundColor:"#e86d13")
+				attributeState("auto", backgroundColor:"#00a0dc")
+			}
+		}
+		
 		standardTile("off", "device.thermostatMode", decoration: "flat", width: 2, height: 2) {
 			state "default", label:'Off', action:"off", backgroundColor:"#ffffff"
 			state "off", label:'Off', action:"refreshMode", backgroundColor:"#cccccc"
-        }
-        standardTile("auto", "device.thermostatMode", decoration: "flat", width: 2, height: 2) {
+		}
+		standardTile("auto", "device.thermostatMode", decoration: "flat", width: 2, height: 2) {
 			state "default", label:'Auto', action:"auto", backgroundColor:"#ffffff"
 			state "auto", label:'Auto', action:"refreshMode", backgroundColor:"#00a0dc"
-        }
-        standardTile("heat", "device.thermostatMode", decoration: "flat", width: 2, height: 2) {
+		}
+		standardTile("heat", "device.thermostatMode", decoration: "flat", width: 2, height: 2) {
 			state "default", label:'Heat', action:"heat", backgroundColor:"#ffffff"
 			state "heat", label:'Heat', action:"refreshMode", backgroundColor:"#e86d13"
-        }
-		standardTile("sensor", "device.param3", decoration: "flat", width: 2, height: 2) {
-			state "default", label: 'No Sensor', action:"refreshParam3", backgroundColor:"#ffffff"
-            state "1", label: 'Sensor OK', action:"refreshParam3", backgroundColor:"#00a0dc"
-            state "3", label: 'Sensor OK', action:"refreshParam3", backgroundColor:"#00a0dc"
-        }
-		standardTile("window", "device.param3", decoration: "flat", width: 2, height: 2) {
-			state "default", label: 'No Alarms', action:"test2", backgroundColor:"#ffffff"
-            state "2", label: 'Window Open', action:"test2", backgroundColor:"#e86d13"
-            state "3", label: 'Window Open', action:"test2", backgroundColor:"#e86d13"
-        }
+		}
+		//standardTile("sensor", "device.sensor", decoration: "flat", width: 2, height: 2) {
+		//	state "default", label: 'No Sensor', action:"refreshParam3", backgroundColor:"#ffffff"
+		//	state "OK", label: 'Sensor OK', action:"refreshParam3", backgroundColor:"#00a0dc"
+		//}
+		valueTile("notification", "device.notification", decoration: "flat", width: 4, height: 2) {
+			state "notification", label: '${currentValue}', action:"resetNotification"
+		}
 		valueTile("battery", "device.battery", decoration: "flat", width: 2, height: 2) {
 			state "battery", label:'${currentValue}%\nbattery', action:"refreshBattery"
-        }
+		}
 	}
 
 	preferences {
@@ -88,95 +82,77 @@ metadata {
 			type: "href",
 			element: "href"
 		)
-        
-        input (
-            title: "1. Override Schedule duration",
-            description: "This parameter determines duration of Override Schedule after turning the knob while normal schedule is active (set by Schedule CC).",
-            type: "paragraph",
-            element: "paragraph"
-        )
-        input (
-            name: "overrideDuration",
-            title: null,
-            description: "Default: 240" ,
-            type: number,
-            range: "10..10000",
-            defaultValue: 240,
-            required: false
-        )
-        input (
-            title: "2. Additional functions",
-            description: "This parameter allows to enable different additional functions of the device.",
-            type: "paragraph",
-            element: "paragraph"
-        )
+		
+		/*input (
+			title: "1. Override Schedule duration",
+			description: "This parameter determines duration of Override Schedule after turning the knob while normal schedule is active (set by Schedule CC).",
+			type: "paragraph",
+			element: "paragraph"
+		)
+		input (
+			name: "overrideDuration",
+			title: null,
+			description: "Default: 240" ,
+			type: number,
+			range: "10..10000",
+			defaultValue: 240,
+			required: false
+		)*/
+		input (
+			title: "2. Additional functions",
+			description: "This parameter allows to enable different additional functions of the device.",
+			type: "paragraph",
+			element: "paragraph"
+		)
 		input ( name: "function1", title: "Open Window Detector", type: "boolean", required: false, defaultValue: 1)
 		input ( name: "function2", title: "Fast Open Window Detector", type: "boolean", required: false, defaultValue: 0 )
 		input ( name: "function3", title: "Increase receiver sensitivity (shortens battery life)", type: "boolean", required: false, defaultValue: 0 )
 		input ( name: "function4", title: "LED indications when controlling remotely", type: "boolean", required: false, defaultValue: 0 )
 		input ( name: "function5", title: "Protect from setting Full ON and Full OFF mode by turning the knob manually", type: "boolean", required: false, defaultValue: 0 )
-        
+		
 		input ( name: "logging", title: "Logging", type: "boolean", required: false )
 	}
 }
 
-def refreshParam3() {
-	log.debug "refreshParam3"
-    encap(zwave.configurationV2.configurationGet(parameterNumber: 3))
-}
-
-def test2() {
-	log.debug "test2"
-    def cmds = []
-	//encap(zwave.scheduleV1.commandScheduleGet())
-    //encap(zwave.clockV1.clockGet())
-    def currentDate = new Date()
-    cmds << zwave.clockV1.clockGet()
-    cmds << zwave.clockV1.clockSet(hour: currentDate.format("H", location.timeZone) as Short, minute: currentDate.format("m", location.timeZone) as Short, weekday: currentDate.format("u", location.timeZone) as Short)
-    cmds << zwave.clockV1.clockGet()
-    //log.debug "${currentDate.format("H", location.timeZone)} ${currentDate.format("m", location.timeZone)} ${currentDate.format("u", location.timeZone)}"
-    encapSequence(cmds,3000)
-}
-
-def refreshBattery() {
-	def cmds = []
-	cmds << [zwave.batteryV1.batteryGet(), 1]
-	cmds << [zwave.batteryV1.batteryGet(), 2]
-    encapSequence(cmds,3500)
-}
-
 def tempUp() {
-	log.debug "tempUp"
-    Integer currentTemp = device.currentValue("thermostatSetpoint")
-    if (currentTemp == null) {
-    	sendEvent([name: "thermostatSetpoint", value: 10])
-    } else if (currentTemp >= 30) {
-    	sendEvent([name: "thermostatSetpoint", value: 30])
-    } else {
-    	sendEvent([name: "thermostatSetpoint", value: (currentTemp as Integer) + 1])
-    }
-    runIn(5,"setTemp")
+	logging("Executing tempUp()","info")
+	Integer currentTemp = device.currentValue("thermostatSetpoint")
+	if (currentTemp == null) {
+		sendEvent([name: "thermostatSetpoint", value: 10])
+	} else if (currentTemp >= 30) {
+		sendEvent([name: "thermostatSetpoint", value: 30])
+	} else {
+		sendEvent([name: "thermostatSetpoint", value: (currentTemp as Integer) + 1])
+	}
+	runIn(5,"setTemp")
 }
 
 def tempDown() {
-	log.debug "tempDown"
-    Integer currentTemp = device.currentValue("thermostatSetpoint")
-    if (currentTemp == null) {
-    	sendEvent([name: "thermostatSetpoint", value: 30])
-    } else if (currentTemp <= 10) {
-    	sendEvent([name: "thermostatSetpoint", value: 10])
-    } else {
-    	sendEvent([name: "thermostatSetpoint", value: (currentTemp as Integer) - 1])
-    }
-    runIn(5,"setTemp")
+	logging("Executing tempDown()","info")
+	Integer currentTemp = device.currentValue("thermostatSetpoint")
+	if (currentTemp == null) {
+		sendEvent([name: "thermostatSetpoint", value: 30])
+	} else if (currentTemp <= 10) {
+		sendEvent([name: "thermostatSetpoint", value: 10])
+	} else {
+		sendEvent([name: "thermostatSetpoint", value: (currentTemp as Integer) - 1])
+	}
+	runIn(5,"setTemp")
 }
 
-def setTemp() {
-    log.debug "setTemp"
-    def cmds = []
-	Integer currentTemp = device.currentValue("thermostatSetpoint")
-	cmds << response(encap(zwave.thermostatSetpointV2.thermostatSetpointSet(precision: 1, reserved01: 0, scale: 0, scaledValue: currentTemp, setpointType: 1, size: 2)))
-    sendHubCommand(cmds,1000)
+def setTemp(Integer degrees = null) {
+	logging("Executing setTemp($degrees)","info")
+	def cmds = []
+	if (degrees == null) { degrees = device.currentValue("thermostatSetpoint") as Integer }
+	cmds << response(encap(zwave.thermostatSetpointV2.thermostatSetpointSet(precision: 1, reserved01: 0, scale: 0, scaledValue: degrees, setpointType: 1, size: 2)))
+	sendHubCommand(cmds,1000)
+}
+
+def setHeatingSetpoint(degrees) {
+	logging("Executing setHeatingSetpoint($degrees)","info")
+	sendEvent([name: "thermostatSetpoint", value: degrees])
+	sendEvent([name: "heatingSetpoint", value:degrees])
+	setTemp(degrees)
 }
 
 def off() { setMode('off') }
@@ -185,52 +161,73 @@ def auto() { setMode('auto') }
 
 def heat() { setMode('heat') }
 
-def refreshMode() {
-    log.debug "refreshMode"
-    def cmds = []
-    sendEvent([name: "thermostatMode", value: null])
-	cmds << response(encap(zwave.thermostatModeV2.thermostatModeGet()));
-    sendHubCommand(cmds,1000)
-}
-
 def setMode(String mode) {
-    log.debug "setMode"
-    def cmds = []
-    def valList = [off: 0, auto: 1, heat: 31]
-    sendEvent([name: "thermostatMode", value: mode])
-    log.debug valList[state]
+	logging("Executing setMode($mode)","info")
+	def cmds = []
+	def valList = [off: 0, auto: 1, heat: 31]
+	sendEvent([name: "thermostatMode", value: mode])
+	log.debug valList[state]
 	cmds << response(encap(zwave.thermostatModeV2.thermostatModeSet(mode: valList[mode])));
 	cmds << response(encap(zwave.thermostatModeV2.thermostatModeGet()));
-    sendHubCommand(cmds,3000)
+	sendHubCommand(cmds,3000)
 }
+
+def refreshMode() {
+	logging("Executing refreshMode($mode)","info")
+	def cmds = []
+	sendEvent([name: "thermostatMode", value: null])
+	cmds << response(encap(zwave.thermostatModeV2.thermostatModeGet()));
+	sendHubCommand(cmds,1000)
+}
+
+def resetNotification() {
+	logging("Executing resetNotification()","info")
+	if ( device.currentValue("param3") in ["2","3"] ) {
+		sendEvent(name: "notification", value: "Window open!" , displayed: true);
+	} else {
+		sendEvent(name: "notification", value: "" , displayed: true);
+	}
+}
+
+def refreshBattery() {
+	logging("Executing refreshBattery()","info")
+	def cmds = []
+	cmds << [zwave.batteryV1.batteryGet(), 1]
+	cmds << [zwave.batteryV1.batteryGet(), 2]
+	encapSequence(cmds,3500)
+}
+
 
 //Configuration and synchronization
 def updated() {
+	logging("Executing updated()","info")
 	if ( state.lastUpdated && (now() - state.lastUpdated) < 500 ) return
 	def cmds = []
 	logging("${device.displayName} - Executing updated()","info")
 	runIn(5,"syncStart")
 	state.lastUpdated = now()
-    configure()
+	configure()
 }
 
 def configure() {
+	logging("Executing configure()","info")
 	def cmds = []
-    def currentDate = new Date()
-    cmds << response(encap(zwave.multiChannelAssociationV2.multiChannelAssociationGet(groupingIdentifier: 1)))
-    cmds << response(encap(zwave.clockV1.clockSet(hour: currentDate.format("H", location.timeZone) as Short, minute: currentDate.format("m", location.timeZone) as Short, weekday: currentDate.format("u", location.timeZone) as Short)))
-    cmds << response(encap(zwave.configurationV2.configurationGet(parameterNumber: 3)))
-    sendHubCommand(cmds,3000)
+	def currentDate = new Date()
+	cmds << response(encap(zwave.multiChannelAssociationV2.multiChannelAssociationGet(groupingIdentifier: 1)))
+	cmds << response(encap(zwave.clockV1.clockSet(hour: currentDate.format("H", location.timeZone) as Short, minute: currentDate.format("m", location.timeZone) as Short, weekday: currentDate.format("u", location.timeZone) as Short)))
+	cmds << response(encap(zwave.configurationV2.configurationGet(parameterNumber: 3)))
+	sendHubCommand(cmds,3000)
 }
 
 def calcFnVal() {
+	logging("Executing calcFnVal()","info")
 	Integer value = 0
 	(1..5).each {
-    	log.debug settings."function${it}"
-        if (settings."function${it}" == "true") {
-    		value = value + 2**(it-1)
-        }
-    }
+		log.debug settings."function${it}"
+		if (settings."function${it}" == "true") {
+			value = value + 2**(it-1)
+		}
+	}
 	return value
 }
 
@@ -240,11 +237,11 @@ private syncStart() {
 	parameterMap().each {
 		if(settings."$it.key" != null || it.num == 2) {
 			if ( it.num == 2 ) {
-            	settingValue = calcFnVal() as Integer
-            } else {
-            	settingValue = settings."$it.key" as Integer
-            }
-            if (state."$it.key" == null) { state."$it.key" = [value: null, state: "synced"] } 
+				settingValue = calcFnVal() as Integer
+			} else {
+				settingValue = settings."$it.key" as Integer
+			}
+			if (state."$it.key" == null) { state."$it.key" = [value: null, state: "synced"] } 
 			if (state."$it.key".value != settingValue || state."$it.key".state != "synced" ) {
 				state."$it.key".value = settingValue
 				state."$it.key".state = "notSynced"
@@ -302,7 +299,7 @@ private syncCheck() {
 	} else {
 		if (device.currentValue("multiStatus")?.contains("Sync")) { multiStatusEvent("Sync OK.", true, true) }
 	}
-    runIn(5, "updateSensor")
+	runIn(5, "updateSensor")
 }
 
 private multiStatusEvent(String statusValue, boolean force = false, boolean display = false) {
@@ -312,13 +309,14 @@ private multiStatusEvent(String statusValue, boolean force = false, boolean disp
 }
 
 private updateSensor() {
+	logging("Executing updateSensor()","info")
 	if ( device.currentValue("param3") in ["1","3"] ) {
-    	def tempTemp = ( device.currentValue("temperature") == null ) ? "--" : "${device.currentValue("temperature")}°"
-    	def tempBatt = ( device.currentValue("sensorBattery") == null ) ? "--" : "${device.currentValue("sensorBattery")}%"
-    	multiStatusEvent( "$tempTemp | $tempBatt")
-    } else {
-    	multiStatusEvent( "--" )
-    }
+		def tempTemp = ( device.currentValue("temperature") == null ) ? "--" : "${device.currentValue("temperature")}°"
+		def tempBatt = ( device.currentValue("sensorBattery") == null ) ? "--" : "${device.currentValue("sensorBattery")}%"
+		multiStatusEvent( "$tempTemp | $tempBatt")
+	} else {
+		multiStatusEvent( "--" )
+	}
 
 }
 
@@ -326,18 +324,19 @@ private updateSensor() {
 def zwaveEvent(physicalgraph.zwave.commands.configurationv2.ConfigurationReport cmd) {
 	log.debug cmd
 	if ( cmd.parameterNumber == 3 ) {
-    	switch (cmd.scaledConfigurationValue) {
-        	case 0: sendEvent(name: "param3", value: "0", descriptionText: "No sensor connected", displayed: display); break
-            case 1: sendEvent(name: "param3", value: "1", descriptionText: "Sensor OK", displayed: display); break
-            case 2: sendEvent(name: "param3", value: "2", descriptionText: "Window Open", displayed: display); break
-            case 3: sendEvent(name: "param3", value: "3", descriptionText: "Window Open, Sensor OK", displayed: display); break
-        }
-    } else {
-        def paramKey = parameterMap().find( {it.num == cmd.parameterNumber } ).key
-        logging("Parameter ${paramKey} value is ${cmd.scaledConfigurationValue} expected " + state."$paramKey".value, "info")
-        state."$paramKey".state = (state."$paramKey".value == cmd.scaledConfigurationValue) ? "synced" : "incorrect"
-        syncNext()
-    }
+		sendEvent(name: "param3", value: cmd.scaledConfigurationValue, displayed: false);
+		def currentNotification = device.currentValue("notification")
+		currentNotification = ( currentNotification != null && currentNotification != "" ) ? currentNotification += "\n" : ""
+		switch (cmd.scaledConfigurationValue) {
+			case 0..1: sendEvent(name: "notification", value: removeItem(currentNotification, "Window Open!"), displayed: true); break;
+			case 2..3: sendEvent(name: "notification", value: currentNotification + "Window Open!", displayed: true); break;
+		}
+	} else {
+		def paramKey = parameterMap().find( {it.num == cmd.parameterNumber } ).key
+		logging("Parameter ${paramKey} value is ${cmd.scaledConfigurationValue} expected " + state."$paramKey".value, "info")
+		state."$paramKey".state = (state."$paramKey".value == cmd.scaledConfigurationValue) ? "synced" : "incorrect"
+		syncNext()
+	}
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.applicationstatusv1.ApplicationRejectedRequest cmd) {
@@ -360,7 +359,7 @@ def zwaveEvent(physicalgraph.zwave.commands.multichannelassociationv2.MultiChann
 		} else {
 			logging("${device.displayName} - MultiChannel Association for Group 1 correct.","info")
 		}
-	}  
+	}
 	if (cmds) { [response(encapSequence(cmds, 1000))] }
 }
 
@@ -370,14 +369,16 @@ def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd) {
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.thermostatmodev2.ThermostatModeReport cmd) {
+	logging("${device.displayName} - ThermostatModeReport received, mode: ${cmd.mode}","info")
 	switch (cmd.mode) {
-    	case 0: sendEvent([name: "thermostatMode", value: "off"]); break;
-        case 1: sendEvent([name: "thermostatMode", value: "auto"]); break;
-        case 31: sendEvent([name: "thermostatMode", value: "heat"]); break;
-    }
+		case 0: sendEvent([name: "thermostatMode", value: "off"]); break;
+		case 1: sendEvent([name: "thermostatMode", value: "auto"]); break;
+		case 31: sendEvent([name: "thermostatMode", value: "heat"]); break;
+	}
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.thermostatsetpointv2.ThermostatSetpointReport cmd) {
+	logging("${device.displayName} - ThermostatSetpointReport received, cmd: ${cmd}","info")
 	def cmdScale = cmd.scale == 1 ? "F" : "C"
 	sendEvent(name: "thermostatSetpoint", unit: getTemperatureScale(), value: convertTemperatureIfNeeded(cmd.scaledValue, cmdScale, cmd.precision).toFloat() as Integer, displayed: true)
 }
@@ -388,23 +389,52 @@ def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinaryReport cm
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelReport cmd, ep = null) {
+	logging("${device.displayName} - SensorMultilevelReport received, ep: $ep cmd: ${cmd}","info")
 	if ( ep == 2 && cmd.sensorType == 1) {
-    	sendEvent(name: "temperature", unit: getTemperatureScale(), value: convertTemperatureIfNeeded(cmd.scaledSensorValue, cmdScale, cmd.precision), displayed: true)
-    	updateSensor()
-    }
+		sendEvent(name: "temperature", unit: getTemperatureScale(), value: convertTemperatureIfNeeded(cmd.scaledSensorValue, cmdScale, cmd.precision), displayed: true)
+		updateSensor()
+	}
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd, ep = null) {
 	logging("${device.displayName} - BatteryReport received, value: ${cmd.batteryLevel} - $ep", "info")
 	if (ep == 1 || ep == null) {
-    	sendEvent(name: "battery", value: cmd.batteryLevel.toString(), unit: "%", displayed: true)
-    } else {
-    	sendEvent(name: "sensorBattery", value: cmd.batteryLevel.toString(), unit: "%", displayed: true)
-        updateSensor()
-    }
+		sendEvent(name: "battery", value: cmd.batteryLevel.toString(), unit: "%", displayed: true)
+	} else {
+		sendEvent(name: "sensorBattery", value: cmd.batteryLevel.toString(), unit: "%", displayed: true)
+		updateSensor()
+	}
 }
 
+def zwaveEvent(physicalgraph.zwave.commands.notificationv3.NotificationReport cmd, ep = null) {
+	logging("${device.displayName} - NotificationReport received: ${cmd} - $ep", "info")
+	def notificationMap = [ 
+		10: 'Replace sensor battery soon.',
+		11: 'Replace sensor battery now!',
+		12: 'Battery is charging.',
+		13: 'Battery is fully charged.',
+		14: 'Charge battery soon.',
+		15: 'Charge battery now!',
+		2: 'External Sensor removed!',
+		3: 'Motor Error!',
+		4: 'Calibration error!' ]
+	def currentNotification = device.currentValue("notification")
+	currentNotification = ( currentNotification != null && currentNotification != "" ) ? currentNotification += "\n" : ""
+	switch (cmd.notificationType) {
+		case 8: switch (cmd.event) {
+					case 0: sendEvent(name: "notification", value: removeItem(currentNotification, notificationMap[cmd.eventParameter[0]]) , displayed: true); break;
+					default: sendEvent(name: "notification", value: currentNotification + notificationMap[cmd.event], displayed: true); break;
+				}; break;
+		case 9: if (cmd.event == 3) { sendEvent(name: "notification", value: currentNotification + notificationMap[cmd.eventParameter[0]], displayed: true) }; break;
+	}
+}
 
+private removeItem(String currentNotifications, String itemToRemove) {
+	log.debug "removeItem!"
+	def tempItems = currentNotifications.tokenize('\n')
+	tempItems.remove(itemToRemove)
+	return tempItems.join('\n')
+}
 
 def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
 	logging("${device.displayName} - MeterReport received, value: ${cmd.scaledMeterValue} scale: ${cmd.scale}","info")
@@ -420,7 +450,7 @@ def zwaveEvent(physicalgraph.zwave.commands.meterv3.MeterReport cmd) {
 ## Z-Wave Toolkit ##
 ####################
 */
-def parse(String description) {	  
+def parse(String description) {
 	def result = []
 	logging("${device.displayName} - Parsing: ${description}")
 	if (description.startsWith("Err 106")) {
@@ -540,7 +570,7 @@ private List intToParam(Long value, Integer size = 1) {
 ##########################
 */
 private Map cmdVersions() {
-	[0x5E: 2, 0x22: 1, 0x59: 1, 0x56: 1, 0x7A: 1, 0x32: 3, 0x71: 1, 0x73: 1, 0x98: 1, 0x31: 5, 0x85: 2, 0x70: 2, 0x72: 2, 0x5A: 1, 0x8E: 2, 0x25: 1, 0x86: 2] //Fibaro Wall Plug ZW5
+	[0x5E: 2, 0x98: 1, 0x9F: 1, 0x55: 1, 0x56: 1, 0x6C: 1, 0x22: 1, 0x86: 1, 0x8E: 2, 0x31: 5, 0x40: 2, 0x43: 2, 0x53: 1, 0x59: 1, 0x5A: 1, 0x7A: 2, 0x60: 3, 0x71: 3, 0x72: 2, 0x75: 2, 0x80: 1, 0x70: 2, 0x81: 1, 0x73: 1, 0x85: 1] //Fibaro Heat Controller
 }
 
 private parameterMap() {[
