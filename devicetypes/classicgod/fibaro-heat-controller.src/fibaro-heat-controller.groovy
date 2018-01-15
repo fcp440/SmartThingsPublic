@@ -194,6 +194,7 @@ def refreshBattery() {
 	def cmds = []
 	cmds << [zwave.batteryV1.batteryGet(), 1]
 	cmds << [zwave.batteryV1.batteryGet(), 2]
+    cmds << [zwave.sensorMultilevelV5.sensorMultilevelGet(), 2]
 	encapSequence(cmds,3500)
 }
 
@@ -383,11 +384,6 @@ def zwaveEvent(physicalgraph.zwave.commands.thermostatsetpointv2.ThermostatSetpo
 	sendEvent(name: "thermostatSetpoint", unit: getTemperatureScale(), value: convertTemperatureIfNeeded(cmd.scaledValue, cmdScale, cmd.precision).toFloat() as Integer, displayed: true)
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinaryReport cmd) {
-	logging("${device.displayName} - SwitchBinaryReport received, value: ${cmd.value}","info")
-	sendEvent([name: "switch", value: (cmd.value == 0 ) ? "off": "on"])
-}
-
 def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelReport cmd, ep = null) {
 	logging("${device.displayName} - SensorMultilevelReport received, ep: $ep cmd: ${cmd}","info")
 	if ( ep == 2 && cmd.sensorType == 1) {
@@ -418,14 +414,17 @@ def zwaveEvent(physicalgraph.zwave.commands.notificationv3.NotificationReport cm
 		2: 'External Sensor removed!',
 		3: 'Motor Error!',
 		4: 'Calibration error!' ]
+    log.debug notificationMap
+    log.debug notificationMap['12']
+    log.debug notificationMap[12]
 	def currentNotification = device.currentValue("notification")
 	currentNotification = ( currentNotification != null && currentNotification != "" ) ? currentNotification += "\n" : ""
 	switch (cmd.notificationType) {
 		case 8: switch (cmd.event) {
-					case 0: sendEvent(name: "notification", value: removeItem(currentNotification, notificationMap[cmd.eventParameter[0]]) , displayed: true); break;
-					default: sendEvent(name: "notification", value: currentNotification + notificationMap[cmd.event], displayed: true); break;
+					case 0: sendEvent(name: "notification", value: removeItem(currentNotification, notificationMap[cmd.eventParameter[0] as Integer]) , displayed: true); break;
+					default: sendEvent(name: "notification", value: currentNotification + notificationMap[cmd.event  as Integer], displayed: true); break;
 				}; break;
-		case 9: if (cmd.event == 3) { sendEvent(name: "notification", value: currentNotification + notificationMap[cmd.eventParameter[0]], displayed: true) }; break;
+		case 9: if (cmd.event == 3) { sendEvent(name: "notification", value: currentNotification + notificationMap[cmd.eventParameter[0] as Integer], displayed: true) }; break;
 	}
 }
 
