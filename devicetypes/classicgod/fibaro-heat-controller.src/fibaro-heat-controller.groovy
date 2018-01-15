@@ -414,9 +414,6 @@ def zwaveEvent(physicalgraph.zwave.commands.notificationv3.NotificationReport cm
 		2: 'External Sensor removed!',
 		3: 'Motor Error!',
 		4: 'Calibration error!' ]
-    log.debug notificationMap
-    log.debug notificationMap['12']
-    log.debug notificationMap[12]
 	def currentNotification = device.currentValue("notification")
 	currentNotification = ( currentNotification != null && currentNotification != "" ) ? currentNotification += "\n" : ""
 	switch (cmd.notificationType) {
