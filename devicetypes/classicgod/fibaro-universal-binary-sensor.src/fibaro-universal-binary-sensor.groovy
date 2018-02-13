@@ -235,7 +235,6 @@ def zwaveEvent(physicalgraph.zwave.commands.applicationstatusv1.ApplicationRejec
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.associationv2.AssociationReport cmd) {
-	log.info "ass rep $cmd"
 	def cmds = []
 	if (cmd.groupingIdentifier == 3) {
 		if (cmd.nodeId != [zwaveHubNodeId]) {
